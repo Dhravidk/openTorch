@@ -122,6 +122,11 @@ Provide:
 ## LLM provider config (OpenAI/Anthropic/Gemini/Ollama)
 Set provider/model in the UI (Settings) or `cgins_config.json`. Child jobs use the same config.
 
+OpenAI supported models:
+- gpt-5.1-codex-mini
+- gpt-5.2
+- gpt-5.2-codex
+
 Local models (Ollama) example:
 ```json
 {

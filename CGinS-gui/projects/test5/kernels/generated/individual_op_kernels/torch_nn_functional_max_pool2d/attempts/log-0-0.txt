@@ -1,0 +1,11 @@
+[Traceback Error]:
+Could not find 'launch' function signature in generated code.
+
+[LLM Generated Feedback]:
+The CUDA module failed to expose the required entry point because there is no `launch(args, kwargs)` definition in the generated kernel code. The loader specifically looks for that symbol (with that parameters-in-order) and cannot proceed otherwise.
+
+To fix the issue on the CUDA side:
+
+1. **Kernel Launch Signature**  
+   Ensure the generated CUDA module exposes a `launch(args, kwargs)` function exactly as specified. If you currently have something like `def launch(input_tensor, kernel_size)` or similar, replace it with:
+   ```python

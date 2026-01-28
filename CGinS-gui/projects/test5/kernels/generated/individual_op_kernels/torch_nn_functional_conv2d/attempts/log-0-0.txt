@@ -1,0 +1,63 @@
+[Traceback Error]:
+Error building extension 'generated_module_gins_verifier_ap85qsnv'
+
+[LLM Generated Feedback]:
+The build failure is coming from CUDA code, not the Python call. The kernel math/indexing looks broadly fine for NCHW, but there are two **CUDA-side compile hazards** in your snippet that commonly break extension builds:
+
+## 1) `TORCH_CHECK` is used in a CUDA translation unit without including the right header
+Your `CUDA_CHECK` macro expands to `TORCH_CHECK(...)`, but you only include `<torch/extension.h>` **after** the macro definition. Depending on include order / compiler, this can yield “`TORCH_CHECK` not declared” during compilation.
+
+### Fix (CUDA-side only)
+Move the Torch includes **above** the macro, or include the specific header that defines `TORCH_CHECK` before the macro:
+
+```cpp
+#include <torch/extension.h>
+#include <c10/util/Exception.h>   // (optional but explicit)
+#include <cuda.h>
+#include <cuda_runtime.h>
+
+#define CUDA_CHECK(err) \
+  do { \
+    cudaError_t err__ = (err); \
+    if (err__ != cudaSuccess) { \
+      TORCH_CHECK(false, "CUDA error: ", cudaGetErrorString(err__)); \
+    } \
+  } while (0)
+```
+
+This keeps the caller-side argument formatting untouched.
+
+---
+
+## 2) Missing standard headers for `std::conditional` / `std::is_same`
+You use:
+```cpp
+typename std::conditional<std::is_same<scalar_t, double>::value, double, float>::type;
+```
+but you don’t include `<type_traits>`. That will fail compilation on many toolchains.
+
+### Fix
+Add:
+```cpp
+#include <type_traits>
+```
+
+---
+
+# Required launch() signature order (must match the given args)
+Your `launch` signature currently matches the provided `args` order for `torch.nn.functional.conv2d`:
+
+1. `arg0` input tensor
+2. `arg1` weight tensor
+3. `arg2` bias tensor
+4. `arg3` stride (vector<int64_t>)
+5. `arg4` padding (vector<int64_t>)
+6. `arg5` dilation (vector<int64_t>)
+7. `arg6` groups (int64_t)
+
+So **do not reorder** these. Types are also appropriate for how the wrapper is passing them.
+
+---
+
+# CUDA parameter usage / indexing correctness notes (no call-site changes)
+These are not build breakers, but they are correctness/safety

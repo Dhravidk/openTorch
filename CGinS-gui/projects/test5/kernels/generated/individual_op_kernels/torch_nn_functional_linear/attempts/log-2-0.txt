@@ -1,0 +1,22 @@
+[Traceback Error]:
+Could not find 'launch' function signature in generated code.
+
+[LLM Generated Feedback]:
+The CUDA kernel bundle is missing the required launch signature and related handling, which is why the runtime couldn’t find the `launch` entry point. To fix the issue, implement a `launch` function (and supporting kernel) that directly mirrors the positional arguments provided in the torch.nn.functional.linear call. Specifically:
+
+1. **Kernel launch signature**  
+   Add a `launch` function whose parameters appear in the exact order the Python caller passes them:  
+   ```cpp
+   void launch(
+       const float* input_data,
+       const float* weight_data,
+       const float* bias_data,
+       float* output_data,
+       int64_t batch_size,
+       int64_t in_features,
+       int64_t out_features);
+   ```  
+   If you’re using PyTorch tensors, you can obtain these pointers and sizes from the tensor metadata, but the kernel launch wrapper must accept them in this order (input, weight, bias, output, dims). Do **not** reorder arguments.
+
+2. **Parameter usage inside the kernel**  
+   Inside `launch` (or the kernels it dispatches), use each parameter consistently with its nickname—e.g., `input_data` should never be reused for weights/bias. Use `in_features` to stride `input_data`, `out_features` to stride `

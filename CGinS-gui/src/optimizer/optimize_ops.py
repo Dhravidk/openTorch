@@ -164,7 +164,10 @@ def main() -> int:
 
     opt_base.mkdir(parents=True, exist_ok=True)
 
-    cfg = resolve_llm_config(args.provider, args.model)
+    try:
+        cfg = resolve_llm_config(args.provider, args.model)
+    except Exception as exc:
+        raise SystemExit(str(exc))
     provider = cfg["provider"]
     model = cfg["model"]
 

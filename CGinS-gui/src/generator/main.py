@@ -40,8 +40,11 @@ from src.llm_config import resolve_llm_config
 
 
 def _pick_llm(provider: str | None, model: str | None) -> tuple[str, str]:
-    cfg = resolve_llm_config(provider, model)
-    return cfg["provider"], cfg["model"]
+    try:
+        cfg = resolve_llm_config(provider, model)
+        return cfg["provider"], cfg["model"]
+    except Exception as exc:
+        raise SystemExit(str(exc))
 
 
 def _generate_kernel(conversation_history: list[dict], provider: str, model: str) -> str:

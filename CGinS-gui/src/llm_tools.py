@@ -35,7 +35,10 @@ def _openai_response_text(resp) -> str:
 def complete(system: str, user: str, provider: str | None = None, model: str | None = None) -> str:
     """Single-shot completion using the resolved provider/model."""
 
-    cfg = resolve_llm_config(provider, model)
+    try:
+        cfg = resolve_llm_config(provider, model)
+    except Exception as exc:
+        return f"LLM summary unavailable: {exc}"
     prov = cfg["provider"]
     mdl = cfg["model"]
 
@@ -104,7 +107,10 @@ class GenModel:
     def chat(self, user_msg: str, model: str | None = None, provider: str | None = None) -> str:
         if not user_msg:
             return ""
-        cfg = resolve_llm_config(provider, model)
+        try:
+            cfg = resolve_llm_config(provider, model)
+        except Exception as exc:
+            return f"Error calling LLM: {exc}"
         self.__user(user_msg)
 
         response = ""

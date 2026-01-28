@@ -1,0 +1,20 @@
+{
+  "job_id": "fe3d11d2-ccad-475b-bf40-082155ac8f39",
+  "project": "test5",
+  "job_type": "export",
+  "status": "success",
+  "created_at": 1769617447.5106342,
+  "log_file": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/projects/test5/logs/export-fe3d11d2-ccad-475b-bf40-082155ac8f39.log",
+  "started_at": 1769617447.7515635,
+  "pid": 5613,
+  "exit_code": 0,
+  "ended_at": 1769617470.0711334,
+  "command": [
+    "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13",
+    "-m",
+    "src.project.export_bundle",
+    "--project-dir",
+    "projects/test5"
+  ],
+  "cwd": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui"
+}

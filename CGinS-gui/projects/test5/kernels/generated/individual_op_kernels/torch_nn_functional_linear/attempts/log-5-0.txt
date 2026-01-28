@@ -1,0 +1,19 @@
+[Traceback Error]:
+Could not find 'launch' function signature in generated code.
+
+[LLM Generated Feedback]:
+To resolve the error “Could not find ‘launch’ function signature in generated code,” update the CUDA source so that a proper `launch` function exists with the required argument order/types and correctly forwards them into the template kernel. Specifically:
+
+1. **Kernel launch signature:**  
+   Define a `launch` function that accepts the exact arguments the caller supplies, in the same order as the template kernel parameters:  
+   ```cpp
+   void launch(
+       int64_t batch_size,
+       int64_t out_features,
+       int64_t in_features,
+       const torch::Tensor& input,
+       const torch::Tensor& weight,
+       const torch::Tensor& bias,
+       torch::Tensor& output) { ... }
+   ```
+   Inside `launch`, extract the data pointers (`input.data_ptr<scalar_t>()`, etc.) and invoke `linear_kernel<scalar_t>` with

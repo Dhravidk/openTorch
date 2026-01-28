@@ -1,3 +1,5 @@
+[job_runner] starting job...
+[job_runner] cmd: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13 -m src.project.benchmark_project --project-dir projects/test5
 {
   "project_dir": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/projects/test5",
   "bundle_path": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/projects/test5/export/test5.cgins",
@@ -21,3 +23,5 @@
   },
   "speedup": 0.009984185059468438
 }
+
+[job_runner] finished rc=0

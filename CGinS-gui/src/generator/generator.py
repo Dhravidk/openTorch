@@ -10,6 +10,7 @@ from anthropic import Anthropic
 from openai import OpenAI
 
 import src.generator.prompts.prompts
+from src.llm_config import resolve_llm_config
 
 
 def cleanup_mkdown(input: str) -> str:
@@ -72,6 +73,7 @@ def ollama_generator(msg: str, model: str = "llama3.2:latest", outputIR: str = "
     Returns:
         str: kernel_code
     """
+    cfg = resolve_llm_config("ollama", model)
     print("Generating code...")
     sys_prompt = src.generator.prompts.prompts.get_system_prompt()
     response = ol.chat(model=model, messages=[
@@ -118,7 +120,10 @@ def gemini_generator(conversation_history: list, model: str = "gemini-2.5-flash"
     print("Generating code (Gemini)...")
     sys_prompt = src.generator.prompts.prompts.get_system_prompt()
 
-    client = genai.Client()
+    cfg = resolve_llm_config("gemini", model)
+    if not cfg.get("google_api_key"):
+        raise RuntimeError("GOOGLE_API_KEY is required for Gemini provider")
+    client = genai.Client(api_key=cfg["google_api_key"])
 
     # Single turn case
     if len(conversation_history) <= 1:
@@ -154,7 +159,10 @@ def chatgpt_generator(conversation_history: list, model: str = "gpt-4o", outputI
         str: kernel_code
     """
 
-    client = OpenAI()
+    cfg = resolve_llm_config("openai", model)
+    if not cfg.get("openai_api_key"):
+        raise RuntimeError("OPENAI_API_KEY is required for OpenAI provider")
+    client = OpenAI(api_key=cfg["openai_api_key"], base_url=cfg.get("base_url"))
 
     print("Generating code (OpenAI)...")
     sys_prompt = src.generator.prompts.prompts.get_system_prompt()
@@ -212,7 +220,10 @@ def anthropic_generator(conversation_history: list,
 
     anthropic_history = convert_chatgpt_to_anthropic(conversation_history)
 
-    client = Anthropic()
+    cfg = resolve_llm_config("anthropic", model)
+    if not cfg.get("anthropic_api_key"):
+        raise RuntimeError("ANTHROPIC_API_KEY is required for Anthropic provider")
+    client = Anthropic(api_key=cfg["anthropic_api_key"])
 
     # Build the request parameters
     params = {

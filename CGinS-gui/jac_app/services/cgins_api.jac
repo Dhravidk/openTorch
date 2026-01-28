@@ -83,10 +83,14 @@ def _default_config() -> dict {
 def _validate_llm_config(cfg: dict) -> any {
     provider = (cfg.get("llm_provider") or "anthropic").strip().lower();
     model = (cfg.get("llm_model") or "").strip().lower();
+    allowed_openai = ["gpt-5.1-codex-mini", "gpt-5.2", "gpt-5.2-codex"];
 
     if provider in ["openai", "gpt"] {
         if not cfg.get("openai_api_key") {
             return "OpenAI provider selected but OPENAI_API_KEY is empty.";
+        }
+        if model not in allowed_openai {
+            return f"Unsupported OpenAI model: {model}. Allowed: {allowed_openai}";
         }
         if "claude" in model or "gemini" in model {
             return "OpenAI provider selected but model looks like Anthropic/Gemini. Pick a GPT model or switch provider.";

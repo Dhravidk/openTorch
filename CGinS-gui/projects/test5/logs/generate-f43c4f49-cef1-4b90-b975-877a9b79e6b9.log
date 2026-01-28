@@ -1,0 +1,196 @@
+[job_runner] starting job...
+[job_runner] cmd: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13 -m src.generator.main projects/test5/profiler/individual_ops --output-base projects/test5/kernels/generated
+[generator] provider=openai model=gpt-5.1-codex-mini
+Processing functions:   0%|          | 0/4 [00:00<?, ?it/s]/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True.
+  _warn_once(
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Since the runtime could not find any `launch(...)` definition in the generated CUDA source, you need to add one whose parameter list matches the call that hits this kernel. The PyTorch frontend is passing arguments in this order:
+
+```
+(input, weight, bias, stride, padding, dilation, groups)
+```
+
+Each must be typed exactly as launched (pointers to device data for the tensors, an array-of-two for each of the spatial parameters, and an `int` for `groups`). The `launch()` definition inside your `.cu` file should therefore look like:
+
+```cpp
+void launch(const float* input,
+            const float* weight,
+            const float* bias,
+            const int32_t stride[2],
+            const int32_t padding[2],
+            const int32_t dilation[2],
+            int32_t groups)
+{
+    // ...
+}
+```
+
+(Adjust the `float`/`int32_t` to match the actual tensor dtype/layout.)
+
+Inside that function:
+
+1. Ensure you use `stride`, `padding`, and `dilation` as provided—do not reorder them or assume scalar values. Use `stride[0]` & `stride[1]` when stepping across height/width.
+2. Access `input`, `weight`, and `bias` via the provided pointers; use the tensor shapes to compute the appropriate offsets (N, C, H, W for the input and similar for the weight). Don’t hardcode dimensions—derive them from the kernel launch’s metadata or pass explicit shape arguments if needed.
+3. Be careful
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_0338bd0e848ad54800697a3ef7b52481938c07ca54d47cdc5e', created_at=1769619191.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0338bd0e848ad54800697a3ef831a0819380bddbdac78855a6', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=6144, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=6656), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:08<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_0d2abc031224f56e00697a3f24b25881a194945dc27a95ba37', created_at=1769619236.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0d2abc031224f56e00697a3f257a4481a19fc895c493eeac97', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=6132, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=6644), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_02081c5a55355d6e00697a3f56b36481a1b7fc1eb5029a85e8', created_at=1769619286.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_02081c5a55355d6e00697a3f57544081a190bd1e42765f2110', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=6138, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=6650), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_0df832ac8cfbb23700697a3f81b9a88194b378c352a1dd1e66', created_at=1769619329.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0df832ac8cfbb23700697a3f820bd88194a3a066a50c3a60bd', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=6140, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=6652), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:05<?, ?it/s]
+Processing functions:  25%|██▌       | 1/4 [05:35<16:46, 335.34s/it][Compilation Failed]
+Summarized traceback:
+ Response(id='resp_08154b07443f8c5b00697a3fb115488197a0e6549d6bfc5a30', created_at=1769619377.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_08154b07443f8c5b00697a3fb1736c81978b56c7251dd859d9', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=6134, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=6646), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/1 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_0339719dcf65298d00697a3fdfdb0c8193a5d0335caf65df13', created_at=1769619423.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0339719dcf65298d00697a3fe025bc8193bc591c2eb6efb28e', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=852, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=1364), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/1 [00:05<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_01f4c634460be57300697a4011df5c81a18abef116ab1bccb4', created_at=1769619473.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_01f4c634460be57300697a4012213081a1ab27459e5285693f', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=1052, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=1564), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/1 [00:05<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ The CUDA kernel bundle is missing the required launch signature and related handling, which is why the runtime couldn’t find the `launch` entry point. To fix the issue, implement a `launch` function (and supporting kernel) that directly mirrors the positional arguments provided in the torch.nn.functional.linear call. Specifically:
+
+1. **Kernel launch signature**  
+   Add a `launch` function whose parameters appear in the exact order the Python caller passes them:  
+   ```cpp
+   void launch(
+       const float* input_data,
+       const float* weight_data,
+       const float* bias_data,
+       float* output_data,
+       int64_t batch_size,
+       int64_t in_features,
+       int64_t out_features);
+   ```  
+   If you’re using PyTorch tensors, you can obtain these pointers and sizes from the tensor metadata, but the kernel launch wrapper must accept them in this order (input, weight, bias, output, dims). Do **not** reorder arguments.
+
+2. **Parameter usage inside the kernel**  
+   Inside `launch` (or the kernels it dispatches), use each parameter consistently with its nickname—e.g., `input_data` should never be reused for weights/bias. Use `in_features` to stride `input_data`, `out_features` to stride `
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/1 [00:05<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ The runtime error is due to the generated CUDA module lacking a `launch()` entry point that matches the kernel’s expected parameters. Since the Python call site and binding boilerplate are fixed, the CUDA kernel code itself must explicitly define a `launch` function with the right signature, argument order, and usage. Based on the provided input arguments (`input`, `weight`, `bias`) and their expected types, here’s what you should fix inside the CUDA source:
+
+1. **Define `launch()` with the correct argument ordering and types:**
+   ```cpp
+   extern "C" __global__ void launch(
+       const float* __restrict__ input,
+       const float* __restrict__ weight,
+       const float* __restrict__ bias,
+       float* __restrict__ output,
+       int64_t input_rows,
+       int64_t input_cols,
+       int64_t output_cols);
+   ```
+   - Ensure the order matches the call (input, weight, bias) plus any derived metadata (dimensions/strides) you actually need.
+   - Stick to primitive CUDA-compatible types (e.g., `const float*`, `float*`, `int64_t`) and add any extra size/stride arguments required by your kernel logic.
+
+2. **Use those parameters correctly inside your kernel:**
+   - Access them only through the pointers passed in; do not attempt to fetch them from `params` structs or reorder them.
+   - Guard against null `bias` if optional by checking before using it.
+   - If your kernel expects output storage, make sure `output` is declared in the signature and filled appropriately.
+
+3. **Correct indexing and shape calculations:**
+   - Use `input_rows`, `input_cols`, and `output_cols` (or equivalent) coming from the launch signature to compute thread indices, e.g.:
+     ```cpp
+     int row = blockIdx.y * blockDim.y + threadIdx.y
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/1 [00:05<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_0a0ab1bf5ae4be5b00697a40a3f2048190ad3fe244200809d4', created_at=1769619619.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0a0ab1bf5ae4be5b00697a40a43ac4819081aacfb9f011e34c', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=1043, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=1555), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/1 [00:05<?, ?it/s]
+Processing functions:  50%|█████     | 2/4 [10:24<10:16, 308.06s/it][Compilation Failed]
+Summarized traceback:
+ To resolve the error “Could not find ‘launch’ function signature in generated code,” update the CUDA source so that a proper `launch` function exists with the required argument order/types and correctly forwards them into the template kernel. Specifically:
+
+1. **Kernel launch signature:**  
+   Define a `launch` function that accepts the exact arguments the caller supplies, in the same order as the template kernel parameters:  
+   ```cpp
+   void launch(
+       int64_t batch_size,
+       int64_t out_features,
+       int64_t in_features,
+       const torch::Tensor& input,
+       const torch::Tensor& weight,
+       const torch::Tensor& bias,
+       torch::Tensor& output) { ... }
+   ```
+   Inside `launch`, extract the data pointers (`input.data_ptr<scalar_t>()`, etc.) and invoke `linear_kernel<scalar_t>` with
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:05<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ The CUDA module failed to expose the required entry point because there is no `launch(args, kwargs)` definition in the generated kernel code. The loader specifically looks for that symbol (with that parameters-in-order) and cannot proceed otherwise.
+
+To fix the issue on the CUDA side:
+
+1. **Kernel Launch Signature**  
+   Ensure the generated CUDA module exposes a `launch(args, kwargs)` function exactly as specified. If you currently have something like `def launch(input_tensor, kernel_size)` or similar, replace it with:
+   ```python
+
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:04<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_089e3730b1b201ce00697a41274dcc8192854d80ca6d4d826f', created_at=1769619751.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_089e3730b1b201ce00697a412796a881929b33e2781a2596b5', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=4364, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=4876), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:05<?, ?it/s]

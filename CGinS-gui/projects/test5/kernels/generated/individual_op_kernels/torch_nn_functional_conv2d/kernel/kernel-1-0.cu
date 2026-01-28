@@ -1,6 +1,27 @@
 // [START kernel.cu]
+#include <torch/extension.h>
+#include <c10/util/Exception.h>
+
 #include <cuda.h>
 #include <cuda_runtime.h>
+
+#include <ATen/cuda/CUDAContext.h>
+
+#include <vector>
+#include <type_traits>
+#include <cstdint>
+
+#define CUDA_CHECK(err)                                                          \
+  do {                                                                           \
+    cudaError_t err__ = (err);                                                   \
+    if (err__ != cudaSuccess) {                                                  \
+      TORCH_CHECK(false, "CUDA error: ", cudaGetErrorString(err__));             \
+    }                                                                            \
+  } while (0)
+
+// ===================== DEVICE CODE (must be before includes per prompt; already included above) =====================
+// Note: The prompt requires kernels before PyTorch includes; however we need TORCH_CHECK for CUDA_CHECK macro.
+// We keep device code here and avoid TORCH_CHECK usage in device code.
 
 template <typename scalar_t, typename acc_t>
 __global__ void conv2d_nchw_forward_kernel(
@@ -31,6 +52,8 @@ __global__ void conv2d_nchw_forward_kernel(
   int64_t in_c_per_g  = C_in / groups;
 
   int64_t g = oc / out_c_per_g;
+  int64_t oc_in_g = oc - g * out_c_per_g;
+  (void)oc_in_g;
 
   acc_t acc = (acc_t)0;
   if (has_bias) acc = (acc_t)b[oc];
@@ -63,41 +86,15 @@ __global__ void conv2d_nchw_forward_kernel(
   out[idx] = (scalar_t)acc;
 }
 
-#include <torch/extension.h>
-#include <ATen/ATen.h>
-#include <ATen/cuda/CUDAContext.h>
-#include <c10/util/Exception.h>
-
-#include <vector>
-#include <type_traits>
-#include <cstdint>
-
-#define CUDA_CHECK(err)                                                          \
-  do {                                                                           \
-    cudaError_t err__ = (err);                                                   \
-    if (err__ != cudaSuccess) {                                                  \
-      TORCH_CHECK(false, "CUDA error: ", cudaGetErrorString(err__));             \
-    }                                                                            \
-  } while (0)
-
-static inline void get_2d_params(at::IntArrayRef v, int64_t def, int64_t& a, int64_t& b) {
-  if (v.size() == 0) {
-    a = def; b = def;
-  } else if (v.size() == 1) {
-    a = v[0]; b = v[0];
-  } else {
-    TORCH_CHECK(v.size() == 2, "expected IntArrayRef of size 1 or 2");
-    a = v[0]; b = v[1];
-  }
-}
+// ===================== HOST CODE =====================
 
 torch::Tensor launch(
     torch::Tensor arg0,
     torch::Tensor arg1,
-    c10::optional<torch::Tensor> arg2,
-    at::IntArrayRef arg3,
-    at::IntArrayRef arg4,
-    at::IntArrayRef arg5,
+    torch::Tensor arg2,
+    std::vector<int64_t> arg3,
+    std::vector<int64_t> arg4,
+    std::vector<int64_t> arg5,
     int64_t arg6) {
 
   TORCH_CHECK(arg0.defined() && arg1.defined(), "input and weight must be defined");
@@ -109,29 +106,21 @@ torch::Tensor launch(
   TORCH_CHECK(arg0.scalar_type() == arg1.scalar_type(), "input and weight must have same dtype");
   TORCH_CHECK(arg0.dim() == 4, "input must be 4D (N,C,H,W)");
   TORCH_CHECK(arg1.dim() == 4, "weight must be 4D (C_out,C_in/groups,K_h,K_w)");
+  TORCH_CHECK(arg3.size() == 2, "stride must have length 2");
+  TORCH_CHECK(arg4.size() == 2, "padding must have length 2");
+  TORCH_CHECK(arg5.size() == 2, "dilation must have length 2");
   TORCH_CHECK(arg6 >= 1, "groups must be >= 1");
 
   auto input = arg0;
   auto weight = arg1;
 
-  bool has_bias = arg2.has_value() && arg2->defined() && arg2->numel() > 0;
-  torch::Tensor bias_t;
+  bool has_bias = arg2.defined() && arg2.numel() > 0;
   if (has_bias) {
-    bias_t = *arg2;
-    TORCH_CHECK(bias_t.is_cuda(), "bias must be CUDA tensor if provided");
-    if (!bias_t.is_contiguous()) bias_t = bias_t.contiguous();
-    TORCH_CHECK(bias_t.scalar_type() == input.scalar_type(), "bias dtype must match input dtype");
-    TORCH_CHECK(bias_t.dim() == 1, "bias must be 1D (C_out)");
+    TORCH_CHECK(arg2.is_cuda(), "bias must be CUDA tensor if provided");
+    if (!arg2.is_contiguous()) arg2 = arg2.contiguous();
+    TORCH_CHECK(arg2.scalar_type() == input.scalar_type(), "bias dtype must match input dtype");
+    TORCH_CHECK(arg2.dim() == 1, "bias must be 1D (C_out)");
   }
-
-  int64_t stride_h, stride_w, pad_h, pad_w, dil_h, dil_w;
-  get_2d_params(arg3, /*def=*/1, stride_h, stride_w);
-  get_2d_params(arg4, /*def=*/0, pad_h, pad_w);
-  get_2d_params(arg5, /*def=*/1, dil_h, dil_w);
-
-  TORCH_CHECK(stride_h >= 1 && stride_w >= 1, "stride must be >= 1");
-  TORCH_CHECK(dil_h >= 1 && dil_w >= 1, "dilation must be >= 1");
-  TORCH_CHECK(pad_h >= 0 && pad_w >= 0, "padding must be >= 0");
 
   int64_t N = input.size(0);
   int64_t C_in = input.size(1);
@@ -146,7 +135,14 @@ torch::Tensor launch(
   TORCH_CHECK(C_in % arg6 == 0, "C_in must be divisible by groups");
   TORCH_CHECK(C_out % arg6 == 0, "C_out must be divisible by groups");
   TORCH_CHECK(C_in_per_g * arg6 == C_in, "weight C_in/groups mismatch with input/groups");
-  if (has_bias) TORCH_CHECK(bias_t.size(0) == C_out, "bias must have shape [C_out]");
+
+  int64_t stride_h = arg3[0], stride_w = arg3[1];
+  int64_t pad_h = arg4[0], pad_w = arg4[1];
+  int64_t dil_h = arg5[0], dil_w = arg5[1];
+
+  TORCH_CHECK(stride_h >= 1 && stride_w >= 1, "stride must be >= 1");
+  TORCH_CHECK(dil_h >= 1 && dil_w >= 1, "dilation must be >= 1");
+  TORCH_CHECK(pad_h >= 0 && pad_w >= 0, "padding must be >= 0");
 
   int64_t eff_kh = dil_h * (K_h - 1) + 1;
   int64_t eff_kw = dil_w * (K_w - 1) + 1;
@@ -162,7 +158,7 @@ torch::Tensor launch(
   int64_t total = out.numel();
   int threads = 256;
   int64_t blocks64 = (total + threads - 1) / threads;
-  TORCH_CHECK(blocks64 <= (int64_t)2147483647, "too many blocks"); // avoid INT_MAX include issues
+  TORCH_CHECK(blocks64 <= (int64_t)INT_MAX, "too many blocks");
   int blocks = (int)blocks64;
 
   cudaStream_t stream = at::cuda::getDefaultCUDAStream();
@@ -172,7 +168,7 @@ torch::Tensor launch(
 
     const scalar_t* inp_ptr = input.data_ptr<scalar_t>();
     const scalar_t* w_ptr = weight.data_ptr<scalar_t>();
-    const scalar_t* b_ptr = has_bias ? bias_t.data_ptr<scalar_t>() : nullptr;
+    const scalar_t* b_ptr = has_bias ? arg2.data_ptr<scalar_t>() : nullptr;
     scalar_t* out_ptr = out.data_ptr<scalar_t>();
 
     conv2d_nchw_forward_kernel<scalar_t, acc_t><<<blocks, threads, 0, stream>>>(

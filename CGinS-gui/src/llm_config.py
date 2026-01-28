@@ -36,13 +36,26 @@ def _normalize_provider(provider: str) -> str:
 
 def _default_model(provider: str) -> str:
     if provider == "openai":
-        return "gpt-4o"
+        return "gpt-5.1-codex-mini"
     if provider == "gemini":
         return "gemini-2.5-flash"
     if provider == "ollama":
         # local model; user can set qwen2.5:7b or similar
         return "qwen2.5:7b"
     return "claude-opus-4-5-20251101"
+
+
+ALLOWED_OPENAI_MODELS = {
+    "gpt-5.1-codex-mini",
+    "gpt-5.2",
+    "gpt-5.2-codex",
+}
+
+
+def _validate_openai_model(model: str) -> None:
+    if model not in ALLOWED_OPENAI_MODELS:
+        allowed = ", ".join(sorted(ALLOWED_OPENAI_MODELS))
+        raise ValueError(f"Unsupported OpenAI model '{model}'. Allowed: {allowed}")
 
 
 def resolve_llm_config(
@@ -72,6 +85,9 @@ def resolve_llm_config(
     ollama_host = os.getenv("CGINS_OLLAMA_HOST") or os.getenv("OLLAMA_HOST") or None
     if resolved_provider == "ollama" and ollama_host:
         os.environ["OLLAMA_HOST"] = ollama_host
+
+    if resolved_provider == "openai":
+        _validate_openai_model(resolved_model)
 
     return {
         "provider": resolved_provider,

@@ -1,0 +1,29 @@
+[Traceback Error]:
+Could not find 'launch' function signature in generated code.
+
+[LLM Generated Feedback]:
+The runtime error is due to the generated CUDA module lacking a `launch()` entry point that matches the kernel’s expected parameters. Since the Python call site and binding boilerplate are fixed, the CUDA kernel code itself must explicitly define a `launch` function with the right signature, argument order, and usage. Based on the provided input arguments (`input`, `weight`, `bias`) and their expected types, here’s what you should fix inside the CUDA source:
+
+1. **Define `launch()` with the correct argument ordering and types:**
+   ```cpp
+   extern "C" __global__ void launch(
+       const float* __restrict__ input,
+       const float* __restrict__ weight,
+       const float* __restrict__ bias,
+       float* __restrict__ output,
+       int64_t input_rows,
+       int64_t input_cols,
+       int64_t output_cols);
+   ```
+   - Ensure the order matches the call (input, weight, bias) plus any derived metadata (dimensions/strides) you actually need.
+   - Stick to primitive CUDA-compatible types (e.g., `const float*`, `float*`, `int64_t`) and add any extra size/stride arguments required by your kernel logic.
+
+2. **Use those parameters correctly inside your kernel:**
+   - Access them only through the pointers passed in; do not attempt to fetch them from `params` structs or reorder them.
+   - Guard against null `bias` if optional by checking before using it.
+   - If your kernel expects output storage, make sure `output` is declared in the signature and filled appropriately.
+
+3. **Correct indexing and shape calculations:**
+   - Use `input_rows`, `input_cols`, and `output_cols` (or equivalent) coming from the launch signature to compute thread indices, e.g.:
+     ```cpp
+     int row = blockIdx.y * blockDim.y + threadIdx.y

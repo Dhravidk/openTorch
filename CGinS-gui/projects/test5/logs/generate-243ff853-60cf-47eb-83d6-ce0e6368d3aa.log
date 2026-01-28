@@ -1,0 +1,649 @@
+[job_runner] starting job...
+[job_runner] cmd: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13 -m src.generator.main projects/test5/profiler/individual_ops --output-base projects/test5/kernels/generated
+[generator] provider=openai model=gpt-5.1-codex-mini
+Processing functions:   0%|          | 0/4 [00:00<?, ?it/s]/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True.
+  _warn_once(
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_011990537fec201400697a26f572d08193b84bbb3b7c97008f', created_at=1769613045.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_011990537fec201400697a26f603948193950964fcc2a858f2', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=6130, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=6642), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:07<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_0fbe89216d30c93b00697a2727a55081919031a91c72f33fbc', created_at=1769613095.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0fbe89216d30c93b00697a27282bf081918f5180d8dafab796', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=6136, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=6648), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ The generated CUDA code is missing the `launch()` wrapper entirely—this is the root cause of the “Could not find `launch` function signature” error and must be addressed in the CUDA source. Based on the provided `torch.nn.functional.conv2d` call, the CUDA kernel’s `launch()` function must be declared with the following exact argument ordering and types (matching the Python call site):
+
+1. **Kernel Launch Signature
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:05<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Since the CUDA source lacks a `launch()` function with the required signature, the wrapper cannot invoke the kernel. Ensure the CUDA module defines a `launch()` with the parameter order from the `input_and_output` metadata (matching the user’s argument list). Specifically:
+
+1. **Kernel launch signature** – Implement `launch()` with the same number, order, and types of inputs as the original PyTorch call (`input`, `weight`, `bias`, `stride`, `padding`, `dilation`, `groups`, `padding_mode`, etc.). The kernel’s `launch()` prototype must exactly mirror the `torch.nn.functional.conv2d` call signature passed via the `args` list.
+
+2. **Internal parameter handling** – Inside `launch()`, map each argument (`input`, `weight`, `bias`, strides, padding, etc.) to corresponding kernel parameters with matching types (e.g., `torch::Tensor` for tensors, `int64_t` for scalar strides/padding). Avoid reordering or dropping parameters.
+
+3. **Index/math correctness** – Once the arguments are available, ensure the computation uses the provided stride/padding/dilation/group values correctly for memory indexing. Use the shape metadata derived from the arguments (e.g., input dimensions, kernel size, groups) for pointer arithmetic and bounds checks.
+
+Without `launch()`, the module can’t compile. Add that function with the proper ordering/types, and ensure the CUDA kernels it calls use those parameters consistently.
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ To fix the missing `launch` function signature in your CUDA module, you must ensure that the kernel’s `launch()` entry point is defined with the exact positional arguments and tensor/order that `torch.nn.functional.conv2d` passes in. Based on the `args` list you provided, the CUDA-side `launch()` should accept (in this precise order):
+
+1. `torch::Tensor input`
+2. `torch::Tensor weight`
+3. `torch::Tensor bias`
+4. `IntArrayRef stride`
+5. `IntArrayRef padding`
+6. `IntArrayRef dilation`
+7. `int64_t groups`
+
+**Recommendations:**
+
+1. **Define the launch signature exactly**: Declare `launch` with those parameters in the same order, e.g.
+   ```cpp
+   void launch(
+       const at::Tensor& input,
+       const at::Tensor& weight,
+       const at::Tensor& bias,
+       const c10::IntArrayRef& stride,
+       const c10::IntArrayRef& padding,
+       const c10::IntArrayRef& dilation,
+       int64_t groups);
+   ```
+   Any mismatch in ordering or types will make it “not found” by the dispatcher.
+
+2. **Ensure parameter use inside CUDA code is consistent**:
+   - Access stride/padding/dilation values via `stride[i]`, `padding[i]`, `dilation[i]` (no reordering).
+   - Assume `bias` may be optional – check for `bias.defined()` before using, and handle null appropriately.
+   - Use `groups` exactly as provided; don’t reorder or default to a hard-coded value.
+
+3. **Validate indexing and shape arithmetic**:
+   - Use the input tensor’s dimensions to compute output shape (batch, channels, height, width
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:06<?, ?it/s]
+Processing functions:  25%|██▌       | 1/4 [05:46<17:20, 346.81s/it][Compilation Failed]
+Summarized traceback:
+ Response(id='resp_090ca6ab7bfb429200697a27e921a481a19cd15ea93c162a68', created_at=1769613289.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_090ca6ab7bfb429200697a27e9a89081a1bc9d703560d4cc9e', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=6138, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=6650), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/1 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ To resolve the “Could not find ‘launch’ function signature” error, update the CUDA-side kernel code as follows:
+
+1. **Kernel `launch()` signature:**  
+   Define the `launch` entry point with exactly the three positional arguments in the order used by `torch.nn.functional.linear`:  
+   ```cpp
+   void launch(
+       const float* __restrict__ input,
+       const float* __restrict__ weight,
+       const float* __restrict__ bias,
+       float* __restrict__ output,
+       int input_rows,
+       int input_cols,
+       int output_cols
+   );
+   ```
+   (If you’re using `torch::Tensor`, adjust to `Tensor` references but maintain the same positional order: input, weight, bias.)  
+   Ensure the host wrapper also calls this signature without reordering arguments.
+
+2. **Parameter usage inside CUDA:**  
+   - Use `input` (shape `[batch, in_features]`) as the first argument, `weight` (shape `[out_features, in_features]`) as the second, and `bias` (shape `[out_features]`) as the third.  
+   - Avoid implicit re-ordering by deriving pointers / strides directly from these parameters.  
+   - If `bias` can be optional, handle `
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/1 [00:05<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_0c4a6f0b87d5cce300697a28494f38819f913462c1f46addbc', created_at=1769613385.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0c4a6f0b87d5cce300697a28498b48819fa8187e23b8b5d582', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=1048, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=1560), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/1 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_0e06e4cc9d7f358d00697a287eeee08194a7b0f0a7478339e1', created_at=1769613438.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0e06e4cc9d7f358d00697a287fbac08194b70f8e6263e13b1a', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=1054, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=1566), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][A[1/3] c++ -MMD -MF main.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_wjyz7w41 -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -fPIC -std=c++17 -c /tmp/gins_verifier_wjyz7w41/main.cpp -o main.o 
+[2/3] /usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_wjyz7w41 -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_wjyz7w41/cuda.cu -o cuda.cuda.o 
+FAILED: [code=1] cuda.cuda.o 
+/usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_wjyz7w41 -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_wjyz7w41/cuda.cu -o cuda.cuda.o 
+/usr/include/c++/11/bits/std_function.h:435:145: error: parameter packs not expanded with ‘...’:
+  435 |         function(_Functor&& __f)
+      |                                                                                                                                                 ^ 
+/usr/include/c++/11/bits/std_function.h:435:145: note:         ‘_ArgTypes’
+/usr/include/c++/11/bits/std_function.h:530:146: error: parameter packs not expanded with ‘...’:
+  530 |         operator=(_Functor&& __f)
+      |                                                                                                                                                  ^ 
+/usr/include/c++/11/bits/std_function.h:530:146: note:         ‘_ArgTypes’
+ninja: build stopped: subcommand failed.
+Input Tests:   0%|          | 0/1 [03:56<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_0eda00540deccc6500697a298a3cc081919656e13840e82d16', created_at=1769613706.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0eda00540deccc6500697a298a77cc81919b29c2fd5e219a72', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=1590, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=2102), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][A[1/3] c++ -MMD -MF main.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_127rw03i -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -fPIC -std=c++17 -c /tmp/gins_verifier_127rw03i/main.cpp -o main.o 
+[2/3] /usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_127rw03i -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_127rw03i/cuda.cu -o cuda.cuda.o 
+FAILED: [code=1] cuda.cuda.o 
+/usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_127rw03i -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_127rw03i/cuda.cu -o cuda.cuda.o 
+/tmp/gins_verifier_127rw03i/cuda.cu(4): error: unrecognized token
+
+/tmp/gins_verifier_127rw03i/cuda.cu(4): error: expected a declaration
+
+/tmp/gins_verifier_127rw03i/cuda.cu(4): error: unrecognized token
+
+/tmp/gins_verifier_127rw03i/cuda.cu(4): error: unrecognized token
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/autograd.h(104): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/autograd_not_implemented_fallback.h(31): error: identifier "AutogradFallbackMode" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/autograd_not_implemented_fallback.h(33): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/anomaly_mode.h(65): error: identifier "Node" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/anomaly_mode.h(69): error: identifier "Node" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/anomaly_mode.h(72): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/PythonTorchFunctionTLS.h(31): error: invalid specifier outside a class declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/PythonTorchFunctionTLS.h(32): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/PythonTorchFunctionTLS.h(38): error: expected a declaration
+
+/usr/include/c++/11/bits/stl_stack.h(139): error: expected a declaration
+
+/usr/include/c++/11/bits/stl_stack.h(141): error: a class or namespace qualified name is required
+
+/usr/include/c++/11/bits/stl_stack.h(141): error: expected a ";"
+
+/usr/include/c++/11/bits/stl_stack.h(142): error: a class or namespace qualified name is required
+
+/usr/include/c++/11/bits/stl_stack.h(142): error: expected a ";"
+
+/usr/include/c++/11/bits/stl_stack.h(143): error: a class or namespace qualified name is required
+
+/usr/include/c++/11/bits/stl_stack.h(143): error: expected a ";"
+
+/usr/include/c++/11/bits/stl_stack.h(144): error: identifier "_Sequence" is undefined
+
+/usr/include/c++/11/bits/stl_stack.h(146): error: expected a declaration
+
+/usr/include/c++/11/bits/stl_stack.h(150): error: expected a declaration
+
+/usr/include/c++/11/bits/stl_stack.h(295): error: _RequireNotAllocator is not a template
+
+/usr/include/c++/11/bits/stl_stack.h(296): error: a trailing return type requires the "auto" type specifier
+
+/usr/include/c++/11/bits/stl_stack.h(296): error: stack is not a template
+
+/usr/include/c++/11/bits/stl_stack.h(299): error: _RequireNotAllocator is not a template
+
+/usr/include/c++/11/bits/stl_stack.h(300): error: _RequireAllocator is not a template
+
+/usr/include/c++/11/bits/stl_stack.h(302): error: a trailing return type requires the "auto" type specifier
+
+/usr/include/c++/11/bits/stl_stack.h(302): error: function template "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(319): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(319): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(319): error: nonmember operator requires a parameter with class or enum type
+
+/usr/include/c++/11/bits/stl_stack.h(337): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(337): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(337): error: nonmember operator requires a parameter with class or enum type
+
+/usr/include/c++/11/bits/stl_stack.h(343): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(343): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(343): error: nonmember operator requires a parameter with class or enum type
+
+/usr/include/c++/11/bits/stl_stack.h(349): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(349): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(349): error: nonmember operator requires a parameter with class or enum type
+
+/usr/include/c++/11/bits/stl_stack.h(355): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(355): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(355): error: nonmember operator requires a parameter with class or enum type
+
+/usr/include/c++/11/bits/stl_stack.h(361): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(361): error: overloaded function "stack" is not a type name
+
+/usr/include/c++/11/bits/stl_stack.h(361): error: nonmember operator requires a parameter with class or enum type
+
+/usr/include/c++/11/bits/stl_stack.h(376): error: enable_if is not a template
+
+/usr/include/c++/11/bits/stl_stack.h(376): error: identifier "__is_swappable" is undefined
+
+/usr/include/c++/11/bits/stl_stack.h(376): error: type name is not allowed
+
+/usr/include/c++/11/bits/stl_stack.h(376): error: expected a ";"
+
+/usr/include/c++/11/bits/stl_stack.h(390): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/SavedTensorHooks.h(67): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/SavedTensorHooks.h(69): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/c10/core/impl/PythonDispatcherTLS.h(30): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(43): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(51): error: identifier "RecordFunctionTLS" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(60): error: expected a ">"
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(63): error: identifier "AutogradState" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(72): error: namespace "at::impl" has no member "PythonTorchFunctionTLS"
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(75): error: namespace "at::impl" has no member "SavedTensorDefaultHooksTLS"
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(82): error: namespace "at::impl" has no member "ThreadLocalPythonObjects"
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(91): error: invalid specifier outside a class declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(92): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(97): error: identifier "ThreadLocalState" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(114): error: identifier "ThreadLocalState" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(98): error: identifier "ThreadLocalState" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(100): error: name followed by "::" must be a class or namespace name
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(109): error: name followed by "::" must be a class or namespace name
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/ATen/ThreadLocalState.h(127): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/c10/util/ThreadLocal.h(138): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/c10/util/ThreadLocal.h(140): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(39): error: identifier "Variable" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(39): error: "operator[]" must be a member function
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(40): error: identifier "buffer" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): error: identifier "Variable" is undefined
+
+/usr/include/c++/11/bits/ptr_traits.h(123): error: class "std::pointer_traits<_Ptr>::__rebind<<error-type> *, const <error-type>, void> [with _Ptr=<error-type> *]" has no member "type"
+          detected during:
+            instantiation of type "std::pointer_traits<_Ptr>::rebind<const <error-type>> [with _Ptr=<error-type> *]" 
+/usr/include/c++/11/bits/alloc_traits.h(109): here
+            instantiation of class "std::allocator_traits<_Alloc>::_Ptr<_Func, _Tp, <unnamed>> [with _Alloc=std::allocator<<error-type>>, _Func=std::__allocator_traits_base::__c_pointer, _Tp=const <error-type>, <unnamed>=void]" 
+/usr/include/c++/11/bits/alloc_traits.h(142): here
+            instantiation of class "std::allocator_traits<_Alloc> [with _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/ext/alloc_traits.h(50): here
+            instantiation of class "__gnu_cxx::__alloc_traits<_Alloc, <unnamed>> [with _Alloc=std::allocator<<error-type>>, <unnamed>=<error-type>]" 
+/usr/include/c++/11/bits/stl_vector.h(87): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/bits/ptr_traits.h(123): error: class "std::pointer_traits<_Ptr>::__rebind<<error-type> *, void, void> [with _Ptr=<error-type> *]" has no member "type"
+          detected during:
+            instantiation of type "std::pointer_traits<_Ptr>::rebind<void> [with _Ptr=<error-type> *]" 
+/usr/include/c++/11/bits/alloc_traits.h(109): here
+            instantiation of class "std::allocator_traits<_Alloc>::_Ptr<_Func, _Tp, <unnamed>> [with _Alloc=std::allocator<<error-type>>, _Func=std::__allocator_traits_base::__v_pointer, _Tp=void, <unnamed>=void]" 
+/usr/include/c++/11/bits/alloc_traits.h(150): here
+            instantiation of class "std::allocator_traits<_Alloc> [with _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/ext/alloc_traits.h(50): here
+            instantiation of class "__gnu_cxx::__alloc_traits<_Alloc, <unnamed>> [with _Alloc=std::allocator<<error-type>>, <unnamed>=<error-type>]" 
+/usr/include/c++/11/bits/stl_vector.h(87): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/bits/ptr_traits.h(123): error: class "std::pointer_traits<_Ptr>::__rebind<<error-type> *, const void, void> [with _Ptr=<error-type> *]" has no member "type"
+          detected during:
+            instantiation of type "std::pointer_traits<_Ptr>::rebind<const void> [with _Ptr=<error-type> *]" 
+/usr/include/c++/11/bits/alloc_traits.h(109): here
+            instantiation of class "std::allocator_traits<_Alloc>::_Ptr<_Func, _Tp, <unnamed>> [with _Alloc=std::allocator<<error-type>>, _Func=std::__allocator_traits_base::__cv_pointer, _Tp=const void, <unnamed>=void]" 
+/usr/include/c++/11/bits/alloc_traits.h(158): here
+            instantiation of class "std::allocator_traits<_Alloc> [with _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/ext/alloc_traits.h(50): here
+            instantiation of class "__gnu_cxx::__alloc_traits<_Alloc, <unnamed>> [with _Alloc=std::allocator<<error-type>>, <unnamed>=<error-type>]" 
+/usr/include/c++/11/bits/stl_vector.h(87): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/bits/alloc_traits.h(80): error: class "std::__allocator_traits_base::__rebind<std::allocator<<error-type>>, <error-type>, void>" has no member "type"
+          detected during:
+            instantiation of type "std::__alloc_rebind<std::allocator<<error-type>>, <error-type>>" 
+(213): here
+            instantiation of type "std::allocator_traits<_Alloc>::rebind_alloc<<error-type>> [with _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/ext/alloc_traits.h(120): here
+            instantiation of class "__gnu_cxx::__alloc_traits<_Alloc, <unnamed>>::rebind<_Tp> [with _Alloc=std::allocator<<error-type>>, <unnamed>=<error-type>, _Tp=<error-type>]" 
+/usr/include/c++/11/bits/stl_vector.h(87): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/ext/alloc_traits.h(47): error: a class or namespace qualified name is required
+          detected during:
+            processing of template argument list for "__gnu_cxx::__alloc_traits" based on template argument <<error-type>> 
+/usr/include/c++/11/bits/stl_vector.h(88): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/ext/alloc_traits.h(47): error: expected a ","
+          detected during:
+            processing of template argument list for "__gnu_cxx::__alloc_traits" based on template argument <<error-type>> 
+/usr/include/c++/11/bits/stl_vector.h(88): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/bits/alloc_traits.h(95): error: a class or namespace qualified name is required
+          detected during:
+            instantiation of class "std::allocator_traits<_Alloc> [with _Alloc=<error-type>]" 
+/usr/include/c++/11/ext/alloc_traits.h(50): here
+            instantiation of class "__gnu_cxx::__alloc_traits<_Alloc, <unnamed>> [with _Alloc=<error-type>, <unnamed>=<error-type>]" 
+/usr/include/c++/11/bits/stl_vector.h(88): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/bits/alloc_traits.h(95): error: global-scope qualifier (leading "::") is not allowed
+          detected during:
+            instantiation of class "std::allocator_traits<_Alloc> [with _Alloc=<error-type>]" 
+/usr/include/c++/11/ext/alloc_traits.h(50): here
+            instantiation of class "__gnu_cxx::__alloc_traits<_Alloc, <unnamed>> [with _Alloc=<error-type>, <unnamed>=<error-type>]" 
+/usr/include/c++/11/bits/stl_vector.h(88): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/bits/alloc_traits.h(95): error: expected a ";"
+          detected during:
+            instantiation of class "std::allocator_traits<_Alloc> [with _Alloc=<error-type>]" 
+/usr/include/c++/11/ext/alloc_traits.h(50): here
+            instantiation of class "__gnu_cxx::__alloc_traits<_Alloc, <unnamed>> [with _Alloc=<error-type>, <unnamed>=<error-type>]" 
+/usr/include/c++/11/bits/stl_vector.h(88): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/bits/alloc_traits.h(102): error: identifier "value_type" is undefined
+          detected during:
+            instantiation of class "std::allocator_traits<_Alloc> [with _Alloc=<error-type>]" 
+/usr/include/c++/11/ext/alloc_traits.h(50): here
+            instantiation of class "__gnu_cxx::__alloc_traits<_Alloc, <unnamed>> [with _Alloc=<error-type>, <unnamed>=<error-type>]" 
+/usr/include/c++/11/bits/stl_vector.h(88): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/bits/alloc_traits.h(142): error: expected a ">"
+          detected during:
+            instantiation of class "std::allocator_traits<_Alloc> [with _Alloc=<error-type>]" 
+/usr/include/c++/11/ext/alloc_traits.h(50): here
+            instantiation of class "__gnu_cxx::__alloc_traits<_Alloc, <unnamed>> [with _Alloc=<error-type>, <unnamed>=<error-type>]" 
+/usr/include/c++/11/bits/stl_vector.h(88): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/ext/alloc_traits.h(56): error: class "std::allocator_traits<<error-type>>" has no member "value_type"
+          detected during:
+            instantiation of class "__gnu_cxx::__alloc_traits<_Alloc, <unnamed>> [with _Alloc=<error-type>, <unnamed>=<error-type>]" 
+/usr/include/c++/11/bits/stl_vector.h(88): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/usr/include/c++/11/bits/stl_vector.h(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/bits/stl_vector.h(129): error: not a class or struct name
+          detected during:
+            instantiation of class "std::_Vector_base<_Tp, _Alloc>::_Vector_impl [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+(340): here
+            instantiation of class "std::_Vector_base<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+(389): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/ext/alloc_traits.h(47): error: a class or namespace qualified name is required
+          detected during:
+            processing of template argument list for "__gnu_cxx::__alloc_traits" based on template argument <<error-type>> 
+/usr/include/c++/11/bits/stl_vector.h(411): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/usr/include/c++/11/ext/alloc_traits.h(47): error: expected a ","
+          detected during:
+            processing of template argument list for "__gnu_cxx::__alloc_traits" based on template argument <<error-type>> 
+/usr/include/c++/11/bits/stl_vector.h(411): here
+            instantiation of class "std::vector<_Tp, _Alloc> [with _Tp=<error-type>, _Alloc=std::allocator<<error-type>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): here
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): error: identifier "InputBuffer" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(44): error: identifier "g" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(46): error: identifier "Variable" is undefined
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(55): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/input_buffer.h(57): error: expected a declaration
+
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/graph_task.h(32): error: identifier "Node" is undefined
+
+/usr/include/c++/11/type_traits(163): error: incomplete type is not allowed
+          detected during:
+            instantiation of class "std::__not_<_Pp> [with _Pp=std::__and_<std::__is_fast_hash<std::hash<<error-type> *>>, std::__is_nothrow_invocable<const std::hash<<error-type> *> &, <error-type> *const &>>]" 
+/usr/include/c++/11/bits/unordered_map.h(47): here
+            processing of template argument list for "std::__umap_hashtable" based on template arguments <<error-type> *, int, std::hash<<error-type> *>, std::equal_to<<error-type> *>, std::allocator<std::pair<<error-type> *const, int>>> 
+/usr/include/c++/11/bits/unordered_map.h(104): here
+            instantiation of class "std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc> [with _Key=<error-type> *, _Tp=int, _Hash=std::hash<<error-type> *>, _Pred=std::equal_to<<error-type> *>, _Alloc=std::allocator<std::pair<<error-type> *const, int>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/graph_task.h(32): here
+
+/usr/include/c++/11/bits/hashtable_policy.h(1189): error: incomplete type is not allowed
+          detected during:
+            instantiation of class "std::__detail::_Hash_code_base<_Key, _Value, _ExtractKey, _Hash, _RangeHash, _Unused, __cache_hash_code> [with _Key=<error-type> *, _Value=std::pair<<error-type> *const, int>, _ExtractKey=std::__detail::_Select1st, _Hash=std::hash<<error-type> *>, _RangeHash=std::__detail::_Mod_range_hashing, _Unused=std::__detail::_Default_ranged_hash, __cache_hash_code=<error-constant>]" 
+(1562): here
+            instantiation of class "std::__detail::_Hashtable_base<_Key, _Value, _ExtractKey, _Equal, _Hash, _RangeHash, _Unused, _Traits> [with _Key=<error-type> *, _Value=std::pair<<error-type> *const, int>, _ExtractKey=std::__detail::_Select1st, _Equal=std::equal_to<<error-type> *>, _Hash=std::hash<<error-type> *>, _RangeHash=std::__detail::_Mod_range_hashing, _Unused=std::__detail::_Default_ranged_hash, _Traits=std::__detail::_Hashtable_traits<<error-constant>, false, true>]" 
+/usr/include/c++/11/bits/hashtable.h(181): here
+            instantiation of class "std::_Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal, _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits> [with _Key=<error-type> *, _Value=std::pair<<error-type> *const, int>, _Alloc=std::allocator<std::pair<<error-type> *const, int>>, _ExtractKey=std::__detail::_Select1st, _Equal=std::equal_to<<error-type> *>, _Hash=std::hash<<error-type> *>, _RangeHash=std::__detail::_Mod_range_hashing, _Unused=std::__detail::_Default_ranged_hash, _RehashPolicy=std::__detail::_Prime_rehash_policy, _Traits=std::__detail::_Hashtable_traits<<error-constant>, false, true>]" 
+/usr/include/c++/11/bits/unordered_map.h(105): here
+            instantiation of class "std::unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc> [with _Key=<error-type> *, _Tp=int, _Hash=std::hash<<error-type> *>, _Pred=std::equal_to<<error-type> *>, _Alloc=std::allocator<std::pair<<error-type> *const, int>>]" 
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/autograd/graph_task.h(32): here
+
+Error limit reached.
+100 errors detected in the compilation of "/tmp/gins_verifier_127rw03i/cuda.cu".
+Compilation terminated.
+ninja: build stopped: subcommand failed.
+Input Tests:   0%|          | 0/1 [02:02<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_038bf26db29299ce00697a2a2e1ab08194a242d5adc9f1130f', created_at=1769613870.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_038bf26db29299ce00697a2a2e6e948194bc1bdf117104a03e', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=1608, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=2120), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][A[1/3] c++ -MMD -MF main.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_aqv0v4lm -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -fPIC -std=c++17 -c /tmp/gins_verifier_aqv0v4lm/main.cpp -o main.o 
+[2/3] /usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_aqv0v4lm -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_aqv0v4lm/cuda.cu -o cuda.cuda.o 
+FAILED: [code=1] cuda.cuda.o 
+/usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_aqv0v4lm -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_aqv0v4lm/cuda.cu -o cuda.cuda.o 
+/usr/include/c++/11/bits/std_function.h:435:145: error: parameter packs not expanded with ‘...’:
+  435 |         function(_Functor&& __f)
+      |                                                                                                                                                 ^ 
+/usr/include/c++/11/bits/std_function.h:435:145: note:         ‘_ArgTypes’
+/usr/include/c++/11/bits/std_function.h:530:146: error: parameter packs not expanded with ‘...’:
+  530 |         operator=(_Functor&& __f)
+      |                                                                                                                                                  ^ 
+/usr/include/c++/11/bits/std_function.h:530:146: note:         ‘_ArgTypes’
+ninja: build stopped: subcommand failed.
+Input Tests:   0%|          | 0/1 [03:14<?, ?it/s]
+Processing functions:  50%|█████     | 2/4 [19:05<20:25, 612.65s/it][Compilation Failed]
+Summarized traceback:
+ Response(id='resp_0217517a3b0d11c500697a2b08874c81a3966685cf23b6d59b', created_at=1769614088.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0217517a3b0d11c500697a2b09037881a3bb669c6b040b8c3b', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=1601, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=2113), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:06<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_08d21366039b6aab00697a2b35d2d881a29cc723e0a11a97a9', created_at=1769614133.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_08d21366039b6aab00697a2b36184c81a28779577eb8ffea65', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=4365, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=4877), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][A[1/3] c++ -MMD -MF main.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_d1r6uuvc -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -fPIC -std=c++17 -c /tmp/gins_verifier_d1r6uuvc/main.cpp -o main.o 
+[2/3] /usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_d1r6uuvc -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_d1r6uuvc/cuda.cu -o cuda.cuda.o 
+FAILED: [code=1] cuda.cuda.o 
+/usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_d1r6uuvc -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_d1r6uuvc/cuda.cu -o cuda.cuda.o 
+/usr/include/c++/11/bits/std_function.h:435:145: error: parameter packs not expanded with ‘...’:
+  435 |         function(_Functor&& __f)
+      |                                                                                                                                                 ^ 
+/usr/include/c++/11/bits/std_function.h:435:145: note:         ‘_ArgTypes’
+/usr/include/c++/11/bits/std_function.h:530:146: error: parameter packs not expanded with ‘...’:
+  530 |         operator=(_Functor&& __f)
+      |                                                                                                                                                  ^ 
+/usr/include/c++/11/bits/std_function.h:530:146: note:         ‘_ArgTypes’
+ninja: build stopped: subcommand failed.
+Input Tests:   0%|          | 0/2 [03:07<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ Response(id='resp_076495bd9ee6955f00697a2c0a238881908255625e5c29a7b0', created_at=1769614346.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_076495bd9ee6955f00697a2c0a7f708190be0dff6abf7e990d', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=4956, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=5468), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][A[1/3] c++ -MMD -MF main.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_m0u9zcjl -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -fPIC -std=c++17 -c /tmp/gins_verifier_m0u9zcjl/main.cpp -o main.o 
+Input Tests:   0%|          | 0/2 [02:47<?, ?it/s]
+Processing functions:  50%|█████     | 2/4 [26:22<26:22, 791.37s/it]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 242, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 225, in main
+    ok = process_function(
+        entry_files,
+    ...<3 lines>...
+        max_attempts=max_attempts,
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 172, in process_function
+    success = validate_with_retries(
+        op_dir,
+    ...<4 lines>...
+        max_attempts=max_attempts,
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 93, in validate_with_retries
+    call_success, exec_success, feedback = verify.validate_kernel(
+                                           ~~~~~~~~~~~~~~~~~~~~~~^
+        cu_code, entry_file, log_file_loc, tmpdir
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/verifier.py", line 205, in validate_kernel
+    module = load_inline(
+        name=f"generated_module_{os.path.basename(tmpdir)}",
+    ...<5 lines>...
+        with_cuda=True
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/utils/cpp_extension.py", line 2123, in load_inline
+    return _jit_compile(
+        name,
+    ...<11 lines>...
+        is_standalone=False,
+        keep_intermediates=keep_intermediates)
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/utils/cpp_extension.py", line 2207, in _jit_compile
+    _write_ninja_file_and_build_library(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        name=name,
+        ^^^^^^^^^^
+    ...<9 lines>...
+        with_sycl=with_sycl,
+        ^^^^^^^^^^^^^^^^^^^^
+        is_standalone=is_standalone)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/utils/cpp_extension.py", line 2362, in _write_ninja_file_and_build_library
+    _run_ninja_build(
+    ~~~~~~~~~~~~~~~~^
+        build_directory,
+        ^^^^^^^^^^^^^^^^
+        verbose,
+        ^^^^^^^^
+        error_prefix=f"Error building extension '{name}'")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/utils/cpp_extension.py", line 2693, in _run_ninja_build
+    subprocess.run(
+    ~~~~~~~~~~~~~~^
+        command,
+        ^^^^^^^^
+    ...<4 lines>...
+        check=True,
+        ^^^^^^^^^^^
+        env=env)
+        ^^^^^^^^
+  File "/root/miniconda3/lib/python3.13/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.13/subprocess.py", line 1214, in communicate
+    self.wait()
+    ~~~~~~~~~^^
+  File "/root/miniconda3/lib/python3.13/subprocess.py", line 1280, in wait
+    return self._wait(timeout=timeout)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.13/subprocess.py", line 2066, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ~~~~~~~~~~~~~~^^^
+  File "/root/miniconda3/lib/python3.13/subprocess.py", line 2024, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
