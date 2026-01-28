@@ -1,0 +1,10 @@
+{
+  "name": "test5",
+  "mode": "A",
+  "created_at": 1769569326.9512587,
+  "last_accessed_at": 1769612456.5678852,
+  "profiler_ops": 4,
+  "generated_ops": 1,
+  "optimized_ops": 0,
+  "export_bundles": 1
+}

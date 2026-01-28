@@ -1,0 +1,21 @@
+{
+  "job_id": "5b411d79-93f2-4d34-9369-9702adc7ee5b",
+  "project": "test5",
+  "job_type": "generate",
+  "status": "success",
+  "created_at": 1769569468.3317983,
+  "log_file": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/projects/test5/logs/generate-5b411d79-93f2-4d34-9369-9702adc7ee5b.log",
+  "started_at": 1769569468.6144106,
+  "pid": 87259,
+  "exit_code": 0,
+  "ended_at": 1769569685.5478065,
+  "command": [
+    "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13",
+    "-m",
+    "src.generator.main",
+    "projects/test5/profiler/individual_ops",
+    "--output-base",
+    "projects/test5/kernels/generated"
+  ],
+  "cwd": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui"
+}

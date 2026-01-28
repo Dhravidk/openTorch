@@ -1,0 +1,23 @@
+{
+  "project_dir": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/projects/test5",
+  "bundle_path": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/projects/test5/export/test5.cgins",
+  "bundle_status": "ok",
+  "device": "cuda",
+  "baseline": {
+    "count": 30,
+    "mean_ms": 0.322939732670784,
+    "median_ms": 0.2970239967107773,
+    "p95_ms": 0.4188160002231598,
+    "min_ms": 0.24985599517822266,
+    "max_ms": 0.7239680290222168
+  },
+  "bundle": {
+    "count": 30,
+    "mean_ms": 0.3452959974606832,
+    "median_ms": 0.30873599648475647,
+    "p95_ms": 0.6799359917640686,
+    "min_ms": 0.27136000990867615,
+    "max_ms": 0.6880319714546204
+  },
+  "speedup": 0.9352547815372672
+}

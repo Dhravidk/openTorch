@@ -1,0 +1,62 @@
+#####################
+# Generic gitignore #
+#####################
+
+# Test/Temp files
+tmp
+output
+benchmarks/data/text/*.txt
+
+# Large Data Files
+*.pt
+*.parquet
+*.JPEG
+
+# Compiled files
+benchmarks/compiled/*
+
+
+
+# Python
+Python-3.12.5/*
+*.pyc
+__pycache__/
+*.egg-info*
+dist/
+env/
+venv/
+venv3/
+.venv/
+.pytest_cache
+
+# JavaScript
+bundle.js
+*node_modules*
+files_for_autograder_io/
+*/var/*
+
+# Virtual Machines
+.vagrant/
+
+# Text editors and IDEs
+*~
+*.lock
+*.swp
+.vscode
+.ropeproject/
+.vscode/
+.idea
+
+# macOS system files
+*.DS_Store
+
+# Zone Identifiers
+*Zone.Identifier
+
+# Google Drive and Dropbox
+Icon
+.dropbox*
+
+# Jac
+.jaccache/*
+.jac/*

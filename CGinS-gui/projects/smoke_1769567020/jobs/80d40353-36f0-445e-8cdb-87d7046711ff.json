@@ -1,0 +1,20 @@
+{
+  "job_id": "80d40353-36f0-445e-8cdb-87d7046711ff",
+  "project": "smoke_1769567020",
+  "job_type": "profile",
+  "status": "success",
+  "created_at": 1769567020.6828299,
+  "log_file": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/projects/smoke_1769567020/logs/profile-80d40353-36f0-445e-8cdb-87d7046711ff.log",
+  "started_at": 1769567020.9395072,
+  "pid": 83855,
+  "exit_code": 0,
+  "ended_at": 1769567063.213156,
+  "command": [
+    "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13",
+    "-m",
+    "src.project.profile_project",
+    "--project-dir",
+    "projects/smoke_1769567020"
+  ],
+  "cwd": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui"
+}

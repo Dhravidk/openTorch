@@ -1,0 +1,20 @@
+{
+  "job_id": "e0dc73ff-26a4-4b04-a743-db04645d3266",
+  "project": "test5",
+  "job_type": "benchmark",
+  "status": "success",
+  "created_at": 1769610928.1072786,
+  "log_file": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/projects/test5/logs/benchmark-e0dc73ff-26a4-4b04-a743-db04645d3266.log",
+  "started_at": 1769610928.3766093,
+  "pid": 95890,
+  "exit_code": 0,
+  "ended_at": 1769610979.9163287,
+  "command": [
+    "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13",
+    "-m",
+    "src.project.benchmark_project",
+    "--project-dir",
+    "projects/test5"
+  ],
+  "cwd": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui"
+}

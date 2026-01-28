@@ -1,0 +1,47 @@
+{
+  "project_dir": "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/projects/test5",
+  "mode": "A",
+  "device": "cuda",
+  "ops": {
+    "torch_nn_functional_conv2d": {
+      "function_name": "torch.nn.functional.conv2d",
+      "count": 2,
+      "signature": {
+        "params": [],
+        "defaults": {}
+      }
+    },
+    "torch_nn_functional_relu": {
+      "function_name": "torch.nn.functional.relu",
+      "count": 2,
+      "signature": {
+        "params": [
+          "input",
+          "inplace"
+        ],
+        "defaults": {
+          "inplace": false
+        }
+      }
+    },
+    "torch_nn_functional_max_pool2d": {
+      "function_name": "torch.nn.functional.max_pool2d",
+      "count": 2,
+      "signature": {
+        "params": [
+          "args",
+          "kwargs"
+        ],
+        "defaults": {}
+      }
+    },
+    "torch_nn_functional_linear": {
+      "function_name": "torch.nn.functional.linear",
+      "count": 1,
+      "signature": {
+        "params": [],
+        "defaults": {}
+      }
+    }
+  }
+}

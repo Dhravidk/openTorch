@@ -1,0 +1,8 @@
+[job_runner] starting job...
+[job_runner] cmd: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13 -m src.project.export_bundle --project-dir projects/test5
+/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/project/export_bundle.py:121: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "created_at": datetime.utcnow().isoformat() + "Z",
+Exported bundle: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/projects/test5/export/test5.cgins
+Ops included: 0
+
+[job_runner] finished rc=0

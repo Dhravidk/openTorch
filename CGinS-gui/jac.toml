@@ -1,0 +1,18 @@
+[project]
+name = "cgins-jac"
+version = "0.1.0"
+description = "CGinS kernel generation GUI implemented in Jac"
+entry-point = "main.jac"
+
+[dependencies]
+
+[dependencies.npm]
+jac-client-node = "1.0.4"
+
+[dependencies.npm.dev]
+"@jac-client/dev-deps" = "1.0.0"
+
+[serve]
+base_route_app = "app"
+
+[plugins.client]

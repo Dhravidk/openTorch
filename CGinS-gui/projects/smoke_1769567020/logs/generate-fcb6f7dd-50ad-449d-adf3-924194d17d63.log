@@ -1,0 +1,61 @@
+[job_runner] starting job...
+[job_runner] cmd: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13 -m src.generator.main projects/smoke_1769567020/profiler/individual_ops --output-base projects/smoke_1769567020/kernels/generated
+[generator] provider=openai model=claude-opus-4-5-20251101
+Processing functions:   0%|          | 0/1 [00:00<?, ?it/s]/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True.
+  _warn_once(
+Processing functions:   0%|          | 0/1 [01:53<?, ?it/s]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 259, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 247, in main
+    process_function(
+    ~~~~~~~~~~~~~~~~^
+        entry_files,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        max_attempts=max_attempts,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 195, in process_function
+    success = validate_with_retries(
+        op_dir,
+    ...<4 lines>...
+        max_attempts=max_attempts,
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 99, in validate_with_retries
+    cu_code = _generate_kernel(conversation_history, provider, model)
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 72, in _generate_kernel
+    return llm_gen.chatgpt_generator(conversation_history, model=model)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/generator.py", line 137, in chatgpt_generator
+    response = client.chat.completions.create(
+               ^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.13/functools.py", line 1026, in __get__
+    val = self.func(instance)
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/openai/_client.py", line 187, in chat
+    from .resources.chat import Chat
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/openai/resources/__init__.py", line 123, in <module>
+    from .vector_stores import (
+    ...<6 lines>...
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/openai/resources/vector_stores/__init__.py", line 3, in <module>
+    from .files import (
+    ...<6 lines>...
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/openai/resources/vector_stores/files.py", line 19, in <module>
+    from ...types.vector_stores import file_list_params, file_create_params, file_update_params
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/openai/types/vector_stores/__init__.py", line 8, in <module>
+    from .file_update_params import FileUpdateParams as FileUpdateParams
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1022, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 1112, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1235, in path_stats
+  File "<frozen importlib._bootstrap_external>", line 152, in _path_stat
+KeyboardInterrupt
+Generating code (OpenAI)...

@@ -1,0 +1,5 @@
+[job_runner] starting job...
+[job_runner] cmd: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13 -m src.project.benchmark_project --project-dir projects/test5
+No bundle found. Run export first or pass --bundle.
+
+[job_runner] finished rc=1

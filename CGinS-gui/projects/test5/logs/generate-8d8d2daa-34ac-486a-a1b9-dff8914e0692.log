@@ -1,0 +1,91 @@
+[job_runner] starting job...
+[job_runner] cmd: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13 -m src.generator.main projects/test5/profiler/individual_ops --output-base projects/test5/kernels/generated
+[generator] provider=openai model=gpt-5.1-codex-mini
+Processing functions:   0%|          | 0/4 [00:00<?, ?it/s]/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True.
+  _warn_once(
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/2 [00:00<?, ?it/s]
+Processing functions:   0%|          | 0/4 [02:09<?, ?it/s]
+Traceback (most recent call last):
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/verifier.py", line 167, in validate_kernel
+    raise ValueError(
+        "Could not find 'launch' function signature in generated code.")
+ValueError: Could not find 'launch' function signature in generated code.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 265, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 248, in main
+    ok = process_function(
+        entry_files,
+    ...<3 lines>...
+        max_attempts=max_attempts,
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 195, in process_function
+    success = validate_with_retries(
+        op_dir,
+    ...<4 lines>...
+        max_attempts=max_attempts,
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 116, in validate_with_retries
+    call_success, exec_success, feedback = verify.validate_kernel(
+                                           ~~~~~~~~~~~~~~~~~~~~~~^
+        cu_code, entry_file, log_file_loc, tmpdir
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/verifier.py", line 193, in validate_kernel
+    log_message = f"[Compilation Failed]\nSummarized traceback:\n {handle_output(str(e), generated_cu_code, log_file_path, entry)}"
+                                                                   ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/verifier.py", line 55, in handle_output
+    feedback = summarize_issue_with_traceback(
+        traceback_error, cu_code, input_and_output)
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/byllm/plugin.jac", line 44, in _wrapped_caller
+    return model.invoke(mtir=mtir);
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/byllm/llm.impl/model.impl.jac", line 29, in invoke
+    return super.invoke(mtir);
+            ^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/byllm/llm.impl/basellm.impl.jac", line 50, in invoke
+    resp = self.dispatch_no_streaming(mtir);
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/byllm/llm.impl/basellm.impl.jac", line 154, in dispatch_no_streaming
+    response = self.model_call_no_stream(params);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/byllm/llm.impl/model.impl.jac", line 49, in model_call_no_stream
+    response = litellm.completion(**params);
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/litellm/utils.py", line 1377, in wrapper
+    raise e
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/litellm/utils.py", line 1246, in wrapper
+    result = original_function(*args, **kwargs)
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/litellm/main.py", line 3770, in completion
+    raise exception_type(
+    ...<5 lines>...
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/litellm/main.py", line 2327, in completion
+    response = anthropic_chat_completions.completion(
+        model=model,
+    ...<15 lines>...
+        custom_llm_provider=custom_llm_provider,
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/litellm/llms/anthropic/chat/handler.py", line 320, in completion
+    headers = AnthropicConfig().validate_environment(
+        api_key=api_key,
+    ...<4 lines>...
+        litellm_params=litellm_params,
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/litellm/llms/anthropic/common_utils.py", line 171, in validate_environment
+    raise litellm.AuthenticationError(
+    ...<3 lines>...
+    )
+litellm.exceptions.AuthenticationError: litellm.AuthenticationError: Missing Anthropic API Key - A call is being made to anthropic but no key is set either in the environment variables or via params. Please set `ANTHROPIC_API_KEY` in your environment vars
+
+[job_runner] finished rc=1

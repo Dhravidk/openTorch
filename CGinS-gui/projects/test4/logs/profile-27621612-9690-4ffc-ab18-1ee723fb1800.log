@@ -1,0 +1,26 @@
+[job_runner] starting job...
+[job_runner] cmd: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13 -m src.project.profile_project --project-dir projects/test4
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/project/profile_project.py", line 322, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/project/profile_project.py", line 259, in main
+    model = _load_mode_b_model(model_py if model_py.exists() else None, full_model_pt)
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/project/profile_project.py", line 211, in _load_mode_b_model
+    obj = torch.load(full_model_pt, map_location="cpu", weights_only=False)
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/serialization.py", line 1549, in load
+    return _load(
+        opened_zipfile,
+    ...<3 lines>...
+        **pickle_load_args,
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/serialization.py", line 2143, in _load
+    result = unpickler.load()
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/serialization.py", line 2132, in find_class
+    return super().find_class(mod_name, name)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AttributeError: Can't get attribute 'Model' on <module 'src.project.profile_project' from '/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/project/profile_project.py'>
+
+[job_runner] finished rc=1

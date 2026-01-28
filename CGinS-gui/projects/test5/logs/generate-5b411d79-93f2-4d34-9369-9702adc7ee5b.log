@@ -1,0 +1,16 @@
+[job_runner] starting job...
+[job_runner] cmd: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13 -m src.generator.main projects/test5/profiler/individual_ops --output-base projects/test5/kernels/generated
+[generator] provider=openai model=gpt-5.1-codex-mini
+Processing functions:   0%|          | 0/4 [00:00<?, ?it/s]/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/profiler/profiler.py:217: UserWarning: Warning: Profiler clears events at the end of each cycle.Only events from the current cycle will be reported.To keep events across cycles, set acc_events=True.
+  _warn_once(
+Processing functions:  25%|██▌       | 1/4 [01:27<04:23, 87.69s/it]Processing functions:  50%|█████     | 2/4 [01:28<01:13, 36.83s/it]Processing functions:  75%|███████▌  | 3/4 [01:29<00:20, 20.42s/it]Processing functions: 100%|██████████| 4/4 [01:30<00:00, 12.74s/it]Processing functions: 100%|██████████| 4/4 [01:30<00:00, 22.69s/it]
+Generating code (OpenAI)...
+Failed generation on attempt 0: Error code: 404 - {'error': {'message': 'This model is only supported in v1/responses and not in v1/chat/completions.', 'type': 'invalid_request_error', 'param': 'model', 'code': None}}
+Generating code (OpenAI)...
+Failed generation on attempt 0: Error code: 404 - {'error': {'message': 'This model is only supported in v1/responses and not in v1/chat/completions.', 'type': 'invalid_request_error', 'param': 'model', 'code': None}}
+Generating code (OpenAI)...
+Failed generation on attempt 0: Error code: 404 - {'error': {'message': 'This model is only supported in v1/responses and not in v1/chat/completions.', 'type': 'invalid_request_error', 'param': 'model', 'code': None}}
+Generating code (OpenAI)...
+Failed generation on attempt 0: Error code: 404 - {'error': {'message': 'This model is only supported in v1/responses and not in v1/chat/completions.', 'type': 'invalid_request_error', 'param': 'model', 'code': None}}
+
+[job_runner] finished rc=0

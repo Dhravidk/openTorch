@@ -1,0 +1,5 @@
+[job_runner] starting job...
+[job_runner] cmd: /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/bin/python3.13 -m src.project.profile_project --project-dir projects/smoke_1769567020
+Profiled 1 ops
+
+[job_runner] finished rc=0
