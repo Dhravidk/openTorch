@@ -60,3 +60,6 @@ Icon
 # Jac
 .jaccache/*
 .jac/*
+
+# Config files with secrets
+cgins_config.json
