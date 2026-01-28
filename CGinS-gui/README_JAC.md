@@ -119,6 +119,18 @@ Provide:
 - `full_model.pt` path created via `torch.save(model, "full_model.pt")`
 - (Optional but recommended) paste `model.py` containing class definitions if needed for unpickling.
 
+## LLM provider config (OpenAI/Anthropic/Gemini/Ollama)
+Set provider/model in the UI (Settings) or `cgins_config.json`. Child jobs use the same config.
+
+Local models (Ollama) example:
+```json
+{
+  "llm_provider": "ollama",
+  "llm_model": "qwen2.5:7b"
+}
+```
+Make sure Ollama is running and `OLLAMA_HOST` is set if not default.
+
 ## Pipeline
 From the UI:
 1. **Profile**
