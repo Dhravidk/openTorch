@@ -1,0 +1,18 @@
+[Traceback Error]:
+Could not find 'launch' function signature in generated code.
+
+[LLM Generated Feedback]:
+Based on the error, the generated CUDA code never defines a `launch` entry point with the required signature. To fix this on the CUDA side:
+
+1. **Define the `launch` function with exactly `input, inplace` (in that order) as parameters, and ensure their types match the tensor data layout you’re using (e.g., `TensorAccessor64<float,1,torch::RestrictPtrTraits>` or raw `float*` plus size metadata).**  
+   - This function must be the kernel entry point that PyTorch (via ATen) will call; if it’s missing, the binding can’t resolve the kernel.
+
+2. **Use the provided parameters inside the CUDA kernel exactly as declared (don’t swap or reinterpret them).**  
+   - If `inplace` is a boolean, treat it as such and only write into `input` when `inplace` is true, otherwise write into a separate output pointer.  
+   - Don’t introduce additional positional arguments (such as shape or stride parameters) unless they’re part of the kernel’s signature; pass them via struct members or capture outside the kernel.
+
+3. **Ensure the kernel’s indexing logic matches the tensor shape.**  
+   - If `input` is contiguous NHWC or NCHW tensor, compute the global thread index with `blockIdx.x`, `threadIdx.x`, etc., and guard against out-of-bounds by checking `idx < total_elements`.  
+   - Use the tensor’s `.sizes()` or precomputed `numel`/`stride` values (passed alongside the pointer or embedded via `TensorAccessor`) to calculate per-dimension indices, rather than assuming a fixed layout.  
+
+Since argument formatting/call site is correct, all fixes must happen in the CUDA kernel

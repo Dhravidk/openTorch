@@ -1,5 +1,44 @@
 [Traceback Error]:
-Could not find 'launch' function signature in generated code.
+Error building extension 'generated_module_gins_verifier_42ffwgu9'
 
 [LLM Generated Feedback]:
-Response(id='resp_08154b07443f8c5b00697a3fb115488197a0e6549d6bfc5a30', created_at=1769619377.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_08154b07443f8c5b00697a3fb1736c81978b56c7251dd859d9', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=6134, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=6646), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+The Python-side argument order is fine; the CUDA-side issue is that your exported `launch()` signature does **not** match `torch.nn.functional.conv2d`’s positional argument order, so the extension build/binding fails (or would mis-handle args at runtime).
+
+`F.conv2d(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1)`
+
+So CUDA `launch()` must accept **exactly** these 7 arguments in this order:
+1) `Tensor input`
+2) `Tensor weight`
+3) `Tensor bias` (can be undefined)
+4) `IntArrayRef stride`
+5) `IntArrayRef padding`
+6) `IntArrayRef dilation`
+7) `int64_t groups`
+
+### 1) Fix: `launch()` signature must match argument order/types
+Your current signature uses `arg0,arg1,arg2,arg3,arg4,arg5,arg6` already, but the binding metadata shows `"signature": {"params": []...}` which typically happens when the function name/signature exported to PyTorch doesn’t match what the generator expects. In practice, ensuring **exact** signature and exporting it fixes this.
+
+Use this exact signature (names don’t matter; order/types do):
+
+```cpp
+torch::Tensor launch(
+    const torch::Tensor& input,
+    const torch::Tensor& weight,
+    const torch::Tensor& bias,          // may be undefined
+    at::IntArrayRef stride,
+    at::IntArrayRef padding,
+    at::IntArrayRef dilation,
+    int64_t groups);
+```
+
+Key points:
+- Make `bias` a `const torch::Tensor&` (not optional type needed; undefined tensor is fine).
+- Keep `IntArrayRef` for stride/padding/dilation.
+- `groups` must be `int64_t`.
+
+### 2) Fix: bias handling inside CUDA/C++ (parameter use)
+Inside `launch()`, keep your `has_bias` logic, but ensure you never read `bias.data_ptr()` unless `bias.defined() && bias.numel() > 0`. Your device kernel already gates bias read by `has_bias`, and you pass `b_ptr=nullptr` otherwise, which is correct.
+
+One improvement: avoid forcing `cudaDeviceSynchronize()` (not a correctness bug, but can cause unwanted sync). The build error won’t be from that, but it’s safe to remove for performance.
+
+### 3) Kernel

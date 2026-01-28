@@ -1,0 +1,20 @@
+[Traceback Error]:
+Could not find 'launch' function signature in generated code.
+
+[LLM Generated Feedback]:
+To resolve the CUDA-side failure, ensure the generated kernel exposes the required `launch` entry point with the correct signature and semantics. The complete fix must include the following CUDA-level corrections:
+
+1. **Correct argument ordering and types in `launch()`**  
+   - Implement or expose a `launch` function that looks like `void launch(const Tensor input, bool inplace)` (or the appropriate typed tensor handle plus `bool`).  
+   - The `input` tensor argument must come first, followed immediately by the `inplace` flag with no reordering or type mismatches; this matches the call-site expectation declared in the `signature`.  
+   - Avoid any wrappers or overloads that change the order or insert auxiliary arguments; the CUDA-bound entry point itself must follow this ordering.
+
+2. **Correct parameter use inside the CUDA code**  
+   - Use the `input` tensor argument as the source/output buffer depending on `inplace` (e.g., read from it and write back, or write into a separate output tensor derived from it).  
+   - Respect the `inplace` flag to decide whether to mutate `input` directly or to write into a separate output allocation; the kernels must branch on this flag as needed.  
+   - Do not reinterpret additional parameters from incorrect positions since the calling convention strictly provides only `input` and `inplace`.
+
+3. **Indexing, pointer arithmetic, and shape-related issues**  
+   - Derive element counts and strides from the provided `input` tensor metadata; avoid hard-coded dimensions.  
+   - Ensure thread/block indexing (e.g., calculating `idx = blockIdx.x * blockDim.x + threadIdx.x`) matches the total number of elements in `input`.  
+   - When computing offsets, use the tensor’s strides and ensure bounds checks (`if (idx >= num

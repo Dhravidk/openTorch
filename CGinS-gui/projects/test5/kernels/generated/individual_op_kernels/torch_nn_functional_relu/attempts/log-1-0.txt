@@ -1,0 +1,22 @@
+[Traceback Error]:
+Could not find 'launch' function signature in generated code.
+
+[LLM Generated Feedback]:
+The current CUDA source never defines a `launch(...)` entry point, which is why the runtime reports “Could not find ‘launch’ function signature in generated code.” To fix this entirely on the CUDA side:
+
+1. **Define the required `launch` signature**: Add a `launch(at::Tensor input, bool inplace)` function (wrapped with `extern "C"` if needed) that the generated bindings expect. The order and types must be exactly:
+   ```cpp
+   void launch(at::Tensor input, bool inplace);
+   ```
+   Do not reorder or rename these arguments—`input` must come before `inplace`, and the Tensor type must match what your RPC/pybind layer expects.
+
+2. **Use the parameters correctly inside CUDA**: Within `launch`, extract raw data pointers, strides, and sizes from `input`. Respect the `inplace` flag by writing either into `input.data_ptr<float>()` (inplace) or an output buffer you allocate (non-inplace). Do not treat `inplace` as an integer mask or reorder arguments passively; handle it explicitly to decide whether to write back into `input` or into a separate buffer.
+
+3. **Correct indexing/pointer arithmetic**: When iterating over the tensor, compute the linear index using tensor sizes/strides (e.g., flattening multi-dimensional index to linear index). Ensure you stay within bounds by launching enough threads for `input.numel()` and using something like:
+   ```cpp
+   const int idx = blockIdx.x * blockDim.x + threadIdx.x;
+   if (idx >= numel) return;
+   float val = data[idx]; // assuming contiguous
+   out[idx] = val > 0 ? val : 0;
+   ```
+   If the tensor isn’t

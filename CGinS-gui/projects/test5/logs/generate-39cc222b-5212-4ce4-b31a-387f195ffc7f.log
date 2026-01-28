@@ -214,3 +214,338 @@ Generating code (OpenAI)...
 Code generated...
 
 Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][A[1/3] c++ -MMD -MF main.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_wo_ykrri -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -fPIC -std=c++17 -c /tmp/gins_verifier_wo_ykrri/main.cpp -o main.o 
+[2/3] /usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_wo_ykrri -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_wo_ykrri/cuda.cu -o cuda.cuda.o 
+FAILED: [code=1] cuda.cuda.o 
+/usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_wo_ykrri -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_wo_ykrri/cuda.cu -o cuda.cuda.o 
+/usr/include/c++/11/bits/std_function.h:435:145: error: parameter packs not expanded with ‘...’:
+  435 |         function(_Functor&& __f)
+      |                                                                                                                                                 ^ 
+/usr/include/c++/11/bits/std_function.h:435:145: note:         ‘_ArgTypes’
+/usr/include/c++/11/bits/std_function.h:530:146: error: parameter packs not expanded with ‘...’:
+  530 |         operator=(_Functor&& __f)
+      |                                                                                                                                                  ^ 
+/usr/include/c++/11/bits/std_function.h:530:146: note:         ‘_ArgTypes’
+ninja: build stopped: subcommand failed.
+Input Tests:   0%|          | 0/2 [03:27<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ The build failure is coming from CUDA-side type/dispatch issues in this kernel code. The Python call ordering is fine; fix the kernel/launcher.
+
+## 1) Fix the dispatch macro (compile-time bug)
+You used `AT_DISPATCH_FLOATING_TYPES_AND_HALF(...)`, but the kernel is valid for *all* dtypes PyTorch may send to `conv2d` in tests (often includes `float`, `half`, and sometimes `bfloat16`). That macro **does not include bfloat16**, and depending on the build it can also trip on missing includes / unsupported half ops.
+
+**Actionable fix:** switch to a dispatch that includes `Half` and `BFloat16`:
+
+```cpp
+#include <ATen/Dispatch.h>
+#include <ATen/cuda/CUDAGuard.h>
+```
+
+and replace:
+
+```cpp
+AT_DISPATCH_FLOATING_TYPES_AND_HALF(input.scalar_type(), "conv2d_nchw_forward_cuda", [&] {
+```
+
+with:
+
+```cpp
+AT_DISPATCH_FLOATING_TYPES_AND2(at::ScalarType::Half,
+                                at::ScalarType::BFloat16,
+                                input.scalar_type(),
+                                "conv2d_nchw_forward_cuda", [&] {
+```
+
+If you *don’t* want to support bf16, then you must explicitly `TORCH_CHECK(input.scalar_type() != at::kBFloat16, "...")`, but usually the verifier expects bf16-capable kernels.
+
+## 2) Fix accumulator type selection (wrong for Half/BFloat16)
+Your accumulator selection:
+
+```cpp
+using acc_t = typename std::conditional<std::is_same<scalar_t, double>::value, double, float>::type;
+```
+
+works for `float/double`, but for `Half`/`BFloat16` you still want `float` accumulation (fine), **but** you must ensure you’re not doing illegal arithmetic on `at::Half` / `at::BFloat16` directly.
+
+**Actionable fix:** explicitly convert input/weight loads to `acc_t` before multiply, and keep stores cast back:
+
+```cpp
+acc_t x  = (acc_t)inp[inp_base + ih * W_in + iw];
+acc_t ww = (acc_t)w[w_ic_base + kh * K_w + kw];
+acc += x * ww;
+```
+
+and keep:
+
+```cpp
+out[idx] = (scalar_t)acc;
+```
+
+This avoids device-side operator overload pitfalls.
+
+## 
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][A[1/3] /usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_7hqal_kp -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_7hqal_kp/cuda.cu -o cuda.cuda.o 
+FAILED: [code=1] cuda.cuda.o 
+/usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_7hqal_kp -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_7hqal_kp/cuda.cu -o cuda.cuda.o 
+/tmp/gins_verifier_7hqal_kp/cuda.cu:75:10: fatal error: ATen/cuda/CUDAGuard.h: No such file or directory
+   75 | #include <ATen/cuda/CUDAGuard.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+[2/3] c++ -MMD -MF main.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_7hqal_kp -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -fPIC -std=c++17 -c /tmp/gins_verifier_7hqal_kp/main.cpp -o main.o 
+ninja: build stopped: subcommand failed.
+Input Tests:   0%|          | 0/2 [00:58<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ The build failure is coming from the **CUDA extension interface**, not from the math in the kernel. Your `launch()` function signature does **not** match what the generated binding expects, so compilation fails when pybind tries to register/call it.
+
+From the provided I/O, the call is equivalent to:
+
+`conv2d(input, weight, bias, stride, padding, dilation, groups)`
+
+So the CUDA-side `launch()` must accept **exactly 7 arguments in exactly that order**, with types compatible with what the extension generator passes.
+
+## 1) Fix `launch()` argument ordering/types (CUDA-side only)
+
+Change `launch()` to take:
+
+1. `torch::Tensor input`
+2. `torch::Tensor weight`
+3. `torch::Tensor bias`  *(NOT optional; caller passes a Tensor)*
+4. `at::IntArrayRef stride`
+5. `at::IntArrayRef padding`
+6. `at::IntArrayRef dilation`
+7. `int64_t groups`
+
+### Concrete patch (signature + bias handling)
+```cpp
+torch::Tensor launch(
+    torch::Tensor arg0,          // input
+    torch::Tensor arg1,          // weight
+    torch::Tensor arg2,          // bias (may be undefined)
+    at::IntArrayRef arg3,        // stride
+    at::IntArrayRef arg4,        // padding
+    at::IntArrayRef arg5,        // dilation
+    int64_t arg6) {              // groups
+```
+
+Then update bias detection to use `defined()` (since it’s no longer optional):
+```cpp
+  bool has_bias = arg2.defined() && arg2.numel() > 0;
+  torch::Tensor bias_t;
+  if (has_bias) {
+    bias_t = arg2;
+    TORCH_CHECK(bias_t.is_cuda(), "bias must be CUDA tensor if provided");
+    if (!bias_t.is_contiguous()) bias_t = bias_t.contiguous();
+    TORCH_CHECK(bias_t.scalar_type() == input.scalar_type(), "bias dtype must match input dtype");
+    TORCH_CHECK(bias_t.dim() == 1, "bias must be 1D (C_out)");
+  }
+```
+
+This matches the caller’s 3rd positional arg being a Tensor (in your test input it’s a real bias tensor).
+
+## 2) Correct parameter use inside CUDA code
+
+Your kernel parameter order is fine **as launched**:
+
+
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/2 [00:00<?, ?it/s][A[1/3] /usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_42ffwgu9 -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_42ffwgu9/cuda.cu -o cuda.cuda.o 
+FAILED: [code=1] cuda.cuda.o 
+/usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_42ffwgu9 -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_42ffwgu9/cuda.cu -o cuda.cuda.o 
+/tmp/gins_verifier_42ffwgu9/cuda.cu:73:10: fatal error: ATen/cuda/CUDAGuard.h: No such file or directory
+   73 | #include <ATen/cuda/CUDAGuard.h>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+[2/3] c++ -MMD -MF main.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_42ffwgu9 -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -fPIC -std=c++17 -c /tmp/gins_verifier_42ffwgu9/main.cpp -o main.o 
+ninja: build stopped: subcommand failed.
+Input Tests:   0%|          | 0/2 [01:03<?, ?it/s]
+Processing functions:  25%|██▌       | 1/4 [18:12<54:37, 1092.52s/it][Compilation Failed]
+Summarized traceback:
+ The Python-side argument order is fine; the CUDA-side issue is that your exported `launch()` signature does **not** match `torch.nn.functional.conv2d`’s positional argument order, so the extension build/binding fails (or would mis-handle args at runtime).
+
+`F.conv2d(input, weight, bias=None, stride=1, padding=0, dilation=1, groups=1)`
+
+So CUDA `launch()` must accept **exactly** these 7 arguments in this order:
+1) `Tensor input`
+2) `Tensor weight`
+3) `Tensor bias` (can be undefined)
+4) `IntArrayRef stride`
+5) `IntArrayRef padding`
+6) `IntArrayRef dilation`
+7) `int64_t groups`
+
+### 1) Fix: `launch()` signature must match argument order/types
+Your current signature uses `arg0,arg1,arg2,arg3,arg4,arg5,arg6` already, but the binding metadata shows `"signature": {"params": []...}` which typically happens when the function name/signature exported to PyTorch doesn’t match what the generator expects. In practice, ensuring **exact** signature and exporting it fixes this.
+
+Use this exact signature (names don’t matter; order/types do):
+
+```cpp
+torch::Tensor launch(
+    const torch::Tensor& input,
+    const torch::Tensor& weight,
+    const torch::Tensor& bias,          // may be undefined
+    at::IntArrayRef stride,
+    at::IntArrayRef padding,
+    at::IntArrayRef dilation,
+    int64_t groups);
+```
+
+Key points:
+- Make `bias` a `const torch::Tensor&` (not optional type needed; undefined tensor is fine).
+- Keep `IntArrayRef` for stride/padding/dilation.
+- `groups` must be `int64_t`.
+
+### 2) Fix: bias handling inside CUDA/C++ (parameter use)
+Inside `launch()`, keep your `has_bias` logic, but ensure you never read `bias.data_ptr()` unless `bias.defined() && bias.numel() > 0`. Your device kernel already gates bias read by `has_bias`, and you pass `b_ptr=nullptr` otherwise, which is correct.
+
+One improvement: avoid forcing `cudaDeviceSynchronize()` (not a correctness bug, but can cause unwanted sync). The build error won’t be from that, but it’s safe to remove for performance.
+
+### 3) Kernel
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][A[1/3] c++ -MMD -MF main.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_dny7uz0n -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -fPIC -std=c++17 -c /tmp/gins_verifier_dny7uz0n/main.cpp -o main.o 
+[2/3] /usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_dny7uz0n -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_dny7uz0n/cuda.cu -o cuda.cuda.o 
+FAILED: [code=1] cuda.cuda.o 
+/usr/bin/nvcc --generate-dependencies-with-compile --dependency-output cuda.cuda.o.d -DTORCH_EXTENSION_NAME=generated_module_gins_verifier_dny7uz0n -DTORCH_API_INCLUDE_EXTENSION_H -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include -isystem /mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/include/torch/csrc/api/include -isystem /root/miniconda3/include/python3.13 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /tmp/gins_verifier_dny7uz0n/cuda.cu -o cuda.cuda.o 
+/usr/include/c++/11/bits/std_function.h:435:145: error: parameter packs not expanded with ‘...’:
+  435 |         function(_Functor&& __f)
+      |                                                                                                                                                 ^ 
+/usr/include/c++/11/bits/std_function.h:435:145: note:         ‘_ArgTypes’
+/usr/include/c++/11/bits/std_function.h:530:146: error: parameter packs not expanded with ‘...’:
+  530 |         operator=(_Functor&& __f)
+      |                                                                                                                                                  ^ 
+/usr/include/c++/11/bits/std_function.h:530:146: note:         ‘_ArgTypes’
+ninja: build stopped: subcommand failed.
+Input Tests:   0%|          | 0/1 [03:07<?, ?it/s]
+[Compilation Failed]
+Summarized traceback:
+ The build failure is coming from a CUDA-side compile issue: you use `__half` utilities (`__half`, `__half2float`, `__float2half`) but you never include the CUDA half header. `cuda_runtime.h` does **not** reliably provide those declarations in all toolchains, so NVCC errors out during compilation.
+
+### 1) Kernel launch() signature (order/types)
+Your `launch(torch::Tensor arg0, torch::Tensor arg1, torch::Tensor arg2)` matches the required call order for `F.linear(input, weight, bias)`:
+- `arg0` = input `[1,1024]`
+- `arg1` = weight `[10,1024]`
+- `arg2` = bias `[10]`
+
+No change needed to argument order. Keep exactly these three tensors in this order.
+
+### 2) CUDA code fix (half type support)
+Add the proper include for half *before* you use `__half` and related intrinsics:
+
+```cpp
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_fp16.h>   // <-- REQUIRED for __half, __half2float, __float2half
+```
+
+That alone typically fixes the “identifier `__half` is undefined” / “__half2float not declared” / similar compilation errors.
+
+### 3) Internal parameter use / indexing notes (not the build error, but correctness/safety)
+Your indexing is consistent with PyTorch’s `linear`: output is `[1,10]` with
+- `inp[k]` meaning `inp[0,k]`
+- `w[j*1024 + k]` meaning `w[j,k]`
+- `out[j]` meaning `out[0,j]`
+
+Two CUDA-side robustness tweaks (optional but recommended):
+- **Make the shared memory size match `blockDim.x`** or enforce `threads==256` with a check.
+  - Right now you hardcode `__shared__ float smem[256];` and also hardcode `threads=256`, so it’s consistent. If someone changes `threads`, it will break. A safe pattern is dynamic shared memory or templating, but if you keep threads fixed at 256, you’re fine.
+- You don’t need `cudaDeviceSynchronize()` (it hurts performance), but it won’t cause build failure. Keeping it is okay for debugging.
+
+#### Minimal patch
+Just add:
+
+```cpp
+#include <cuda
+Generating code (OpenAI)...
+Code generated...
+
+Input Tests:   0%|          | 0/1 [00:00<?, ?it/s][AInput Tests:   0%|          | 0/1 [00:00<?, ?it/s]
+Processing functions:  25%|██▌       | 1/4 [21:52<1:05:36, 1312.22s/it]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 245, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 228, in main
+    ok = process_function(
+        entry_files,
+    ...<3 lines>...
+        max_attempts=max_attempts,
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 175, in process_function
+    success = validate_with_retries(
+        op_dir,
+    ...<4 lines>...
+        max_attempts=max_attempts,
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/main.py", line 96, in validate_with_retries
+    call_success, exec_success, feedback = verify.validate_kernel(
+                                           ~~~~~~~~~~~~~~~~~~~~~~^
+        cu_code, entry_file, log_file_loc, tmpdir
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/src/generator/verifier.py", line 205, in validate_kernel
+    module = load_inline(
+        name=f"generated_module_{os.path.basename(tmpdir)}",
+    ...<5 lines>...
+        with_cuda=True
+    )
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/utils/cpp_extension.py", line 2123, in load_inline
+    return _jit_compile(
+        name,
+    ...<11 lines>...
+        is_standalone=False,
+        keep_intermediates=keep_intermediates)
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/utils/cpp_extension.py", line 2207, in _jit_compile
+    _write_ninja_file_and_build_library(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        name=name,
+        ^^^^^^^^^^
+    ...<9 lines>...
+        with_sycl=with_sycl,
+        ^^^^^^^^^^^^^^^^^^^^
+        is_standalone=is_standalone)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/utils/cpp_extension.py", line 2362, in _write_ninja_file_and_build_library
+    _run_ninja_build(
+    ~~~~~~~~~~~~~~~~^
+        build_directory,
+        ^^^^^^^^^^^^^^^^
+        verbose,
+        ^^^^^^^^
+        error_prefix=f"Error building extension '{name}'")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/Users/Workstation/Desktop/cgins_jac_app_full1/CGinS-gui/.venv/lib/python3.13/site-packages/torch/utils/cpp_extension.py", line 2693, in _run_ninja_build
+    subprocess.run(
+    ~~~~~~~~~~~~~~^
+        command,
+        ^^^^^^^^
+    ...<4 lines>...
+        check=True,
+        ^^^^^^^^^^^
+        env=env)
+        ^^^^^^^^
+  File "/root/miniconda3/lib/python3.13/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.13/subprocess.py", line 1214, in communicate
+    self.wait()
+    ~~~~~~~~~^^
+  File "/root/miniconda3/lib/python3.13/subprocess.py", line 1280, in wait
+    return self._wait(timeout=timeout)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.13/subprocess.py", line 2066, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ~~~~~~~~~~~~~~^^^
+  File "/root/miniconda3/lib/python3.13/subprocess.py", line 2024, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

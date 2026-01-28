@@ -2,6 +2,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+// ============ DEVICE CODE (CUDA kernels only) ============
 template <typename scalar_t, typename acc_t>
 __global__ void conv2d_nchw_forward_kernel(
     scalar_t* __restrict__ out,
@@ -29,7 +30,6 @@ __global__ void conv2d_nchw_forward_kernel(
 
   int64_t out_c_per_g = C_out / groups;
   int64_t in_c_per_g  = C_in / groups;
-
   int64_t g = oc / out_c_per_g;
 
   acc_t acc = (acc_t)0;
@@ -53,9 +53,9 @@ __global__ void conv2d_nchw_forward_kernel(
         int64_t iw = ow * stride_w - pad_w + kw * dil_w;
         if ((uint64_t)iw >= (uint64_t)W_in) continue;
 
-        scalar_t x = inp[inp_base + ih * W_in + iw];
-        scalar_t ww = w[w_ic_base + kh * K_w + kw];
-        acc += (acc_t)x * (acc_t)ww;
+        acc_t x  = (acc_t)inp[inp_base + ih * W_in + iw];
+        acc_t ww = (acc_t)w[w_ic_base + kh * K_w + kw];
+        acc += x * ww;
       }
     }
   }
@@ -65,10 +65,11 @@ __global__ void conv2d_nchw_forward_kernel(
 
 #include <torch/extension.h>
 #include <ATen/ATen.h>
+#include <ATen/Dispatch.h>
 #include <ATen/cuda/CUDAContext.h>
+#include <ATen/cuda/CUDAGuard.h>
 #include <c10/util/Exception.h>
 
-#include <vector>
 #include <type_traits>
 #include <cstdint>
 
@@ -91,10 +92,11 @@ static inline void get_2d_params(at::IntArrayRef v, int64_t def, int64_t& a, int
   }
 }
 
+// ============ HOST CODE ============
 torch::Tensor launch(
     torch::Tensor arg0,
     torch::Tensor arg1,
-    c10::optional<torch::Tensor> arg2,
+    torch::Tensor arg2,
     at::IntArrayRef arg3,
     at::IntArrayRef arg4,
     at::IntArrayRef arg5,
@@ -102,6 +104,8 @@ torch::Tensor launch(
 
   TORCH_CHECK(arg0.defined() && arg1.defined(), "input and weight must be defined");
   TORCH_CHECK(arg0.is_cuda() && arg1.is_cuda(), "input and weight must be CUDA tensors");
+
+  const at::cuda::CUDAGuard device_guard(arg0.device());
 
   if (!arg0.is_contiguous()) arg0 = arg0.contiguous();
   if (!arg1.is_contiguous()) arg1 = arg1.contiguous();
@@ -114,10 +118,10 @@ torch::Tensor launch(
   auto input = arg0;
   auto weight = arg1;
 
-  bool has_bias = arg2.has_value() && arg2->defined() && arg2->numel() > 0;
+  bool has_bias = arg2.defined() && arg2.numel() > 0;
   torch::Tensor bias_t;
   if (has_bias) {
-    bias_t = *arg2;
+    bias_t = arg2;
     TORCH_CHECK(bias_t.is_cuda(), "bias must be CUDA tensor if provided");
     if (!bias_t.is_contiguous()) bias_t = bias_t.contiguous();
     TORCH_CHECK(bias_t.scalar_type() == input.scalar_type(), "bias dtype must match input dtype");
@@ -162,12 +166,13 @@ torch::Tensor launch(
   int64_t total = out.numel();
   int threads = 256;
   int64_t blocks64 = (total + threads - 1) / threads;
-  TORCH_CHECK(blocks64 <= (int64_t)2147483647, "too many blocks"); // avoid INT_MAX include issues
+  TORCH_CHECK(blocks64 <= (int64_t)2147483647, "too many blocks");
   int blocks = (int)blocks64;
 
   cudaStream_t stream = at::cuda::getDefaultCUDAStream();
 
-  AT_DISPATCH_FLOATING_TYPES_AND_HALF(input.scalar_type(), "conv2d_nchw_forward_cuda", [&] {
+  AT_DISPATCH_FLOATING_TYPES_AND2(at::ScalarType::Half, at::ScalarType::BFloat16,
+                                  input.scalar_type(), "conv2d_nchw_forward_cuda", [&] {
     using acc_t = typename std::conditional<std::is_same<scalar_t, double>::value, double, float>::type;
 
     const scalar_t* inp_ptr = input.data_ptr<scalar_t>();

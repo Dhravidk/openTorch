@@ -1,5 +1,55 @@
 [Traceback Error]:
-Could not find 'launch' function signature in generated code.
+Error building extension 'generated_module_gins_verifier_7hqal_kp'
 
 [LLM Generated Feedback]:
-Response(id='resp_0df832ac8cfbb23700697a3f81b9a88194b378c352a1dd1e66', created_at=1769619329.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0df832ac8cfbb23700697a3f820bd88194a3a066a50c3a60bd', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=6140, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=6652), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+The build failure is coming from the **CUDA extension interface**, not from the math in the kernel. Your `launch()` function signature does **not** match what the generated binding expects, so compilation fails when pybind tries to register/call it.
+
+From the provided I/O, the call is equivalent to:
+
+`conv2d(input, weight, bias, stride, padding, dilation, groups)`
+
+So the CUDA-side `launch()` must accept **exactly 7 arguments in exactly that order**, with types compatible with what the extension generator passes.
+
+## 1) Fix `launch()` argument ordering/types (CUDA-side only)
+
+Change `launch()` to take:
+
+1. `torch::Tensor input`
+2. `torch::Tensor weight`
+3. `torch::Tensor bias`  *(NOT optional; caller passes a Tensor)*
+4. `at::IntArrayRef stride`
+5. `at::IntArrayRef padding`
+6. `at::IntArrayRef dilation`
+7. `int64_t groups`
+
+### Concrete patch (signature + bias handling)
+```cpp
+torch::Tensor launch(
+    torch::Tensor arg0,          // input
+    torch::Tensor arg1,          // weight
+    torch::Tensor arg2,          // bias (may be undefined)
+    at::IntArrayRef arg3,        // stride
+    at::IntArrayRef arg4,        // padding
+    at::IntArrayRef arg5,        // dilation
+    int64_t arg6) {              // groups
+```
+
+Then update bias detection to use `defined()` (since it’s no longer optional):
+```cpp
+  bool has_bias = arg2.defined() && arg2.numel() > 0;
+  torch::Tensor bias_t;
+  if (has_bias) {
+    bias_t = arg2;
+    TORCH_CHECK(bias_t.is_cuda(), "bias must be CUDA tensor if provided");
+    if (!bias_t.is_contiguous()) bias_t = bias_t.contiguous();
+    TORCH_CHECK(bias_t.scalar_type() == input.scalar_type(), "bias dtype must match input dtype");
+    TORCH_CHECK(bias_t.dim() == 1, "bias must be 1D (C_out)");
+  }
+```
+
+This matches the caller’s 3rd positional arg being a Tensor (in your test input it’s a real bias tensor).
+
+## 2) Correct parameter use inside CUDA code
+
+Your kernel parameter order is fine **as launched**:
+

@@ -1,5 +1,41 @@
 [Traceback Error]:
-Could not find 'launch' function signature in generated code.
+Error building extension 'generated_module_gins_verifier_dny7uz0n'
 
 [LLM Generated Feedback]:
-Response(id='resp_0339719dcf65298d00697a3fdfdb0c8193a5d0335caf65df13', created_at=1769619423.0, error=None, incomplete_details=IncompleteDetails(reason='max_output_tokens'), instructions=None, metadata={}, model='gpt-5.1-codex-mini', object='response', output=[ResponseReasoningItem(id='rs_0339719dcf65298d00697a3fe025bc8193bc591c2eb6efb28e', summary=[], type='reasoning', content=None, encrypted_content=None, status=None)], parallel_tool_calls=True, temperature=1.0, tool_choice='auto', tools=[], top_p=1.0, background=False, completed_at=None, conversation=None, max_output_tokens=512, max_tool_calls=None, previous_response_id=None, prompt=None, prompt_cache_key=None, prompt_cache_retention=None, reasoning=Reasoning(effort='medium', generate_summary=None, summary=None), safety_identifier=None, service_tier='default', status='incomplete', text=ResponseTextConfig(format=ResponseFormatText(type='text'), verbosity='medium'), top_logprobs=0, truncation='disabled', usage=ResponseUsage(input_tokens=852, input_tokens_details=InputTokensDetails(cached_tokens=0), output_tokens=512, output_tokens_details=OutputTokensDetails(reasoning_tokens=512), total_tokens=1364), user=None, billing={'payer': 'openai'}, frequency_penalty=0.0, presence_penalty=0.0, store=True)
+The build failure is coming from a CUDA-side compile issue: you use `__half` utilities (`__half`, `__half2float`, `__float2half`) but you never include the CUDA half header. `cuda_runtime.h` does **not** reliably provide those declarations in all toolchains, so NVCC errors out during compilation.
+
+### 1) Kernel launch() signature (order/types)
+Your `launch(torch::Tensor arg0, torch::Tensor arg1, torch::Tensor arg2)` matches the required call order for `F.linear(input, weight, bias)`:
+- `arg0` = input `[1,1024]`
+- `arg1` = weight `[10,1024]`
+- `arg2` = bias `[10]`
+
+No change needed to argument order. Keep exactly these three tensors in this order.
+
+### 2) CUDA code fix (half type support)
+Add the proper include for half *before* you use `__half` and related intrinsics:
+
+```cpp
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_fp16.h>   // <-- REQUIRED for __half, __half2float, __float2half
+```
+
+That alone typically fixes the “identifier `__half` is undefined” / “__half2float not declared” / similar compilation errors.
+
+### 3) Internal parameter use / indexing notes (not the build error, but correctness/safety)
+Your indexing is consistent with PyTorch’s `linear`: output is `[1,10]` with
+- `inp[k]` meaning `inp[0,k]`
+- `w[j*1024 + k]` meaning `w[j,k]`
+- `out[j]` meaning `out[0,j]`
+
+Two CUDA-side robustness tweaks (optional but recommended):
+- **Make the shared memory size match `blockDim.x`** or enforce `threads==256` with a check.
+  - Right now you hardcode `__shared__ float smem[256];` and also hardcode `threads=256`, so it’s consistent. If someone changes `threads`, it will break. A safe pattern is dynamic shared memory or templating, but if you keep threads fixed at 256, you’re fine.
+- You don’t need `cudaDeviceSynchronize()` (it hurts performance), but it won’t cause build failure. Keeping it is okay for debugging.
+
+#### Minimal patch
+Just add:
+
+```cpp
+#include <cuda
