@@ -8,11 +8,11 @@
 
 ```mermaid
 flowchart LR
-    A[Profile a PyTorch operation] --> B[Capture tensor context]
-    B --> C[Generate CUDA]
-    C --> D[Compile and validate]
+    A["Profile<br/>PyTorch operation"] --> B["Capture<br/>tensor context"]
+    B --> C["Generate<br/>CUDA"]
+    C --> D["Compile<br/>and validate"]
     D -->|Feedback| C
-    D --> E[Inspect the resulting kernel]
+    D --> E["Inspect<br/>the kernel"]
 ```
 
 The interesting boundary is between generated code and executable evidence: tensor inputs, compilation results, and comparison with the reference operation all participate in the feedback loop.
